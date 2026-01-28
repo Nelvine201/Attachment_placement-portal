@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="p-5 mb-4 bg-light rounded-3 shadow-sm border">
+    <div class="container-fluid py-5 text-center">
+        <h1 class="display-5 fw-bold text-primary">Welcome to the SCI Placement Portal</h1>
+        <p class="col-md-12 fs-4 text-muted">A dedicated platform for Maseno University School of Computing and
+            Informatics students to find attachments and internships easily.</p>
+        <hr class="my-4">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+            <button class="btn btn-primary btn-lg px-4 me-md-2" type="button">Student Portal</button>
+            <div class="mt-4 p-4 bg-light border rounded">
+                <h5>Are you a Company?</h5>
+                <p>Post attachment slots and find qualified students for your organization.</p>
+
+                <a href="{% url 'register_employer' %}" class="btn btn-outline-success">
+                    Register as an Employer
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

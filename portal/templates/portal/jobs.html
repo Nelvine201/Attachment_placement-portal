@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Available Placement Slots</h2>
+    <div class="row">
+        {% for job in jobs %}
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4 h-100">
+                <div class="card-body">
+                    {% if job.employer.logo %}
+                    <img src="{{ job.employer.logo.url }}" alt="logo"
+                        style="width: 50px; height: 50px; margin-right: 15px; object-fit: contain;">
+                    {% endif %}
+
+                    <h5 class="card-title text-primary mt-2">{{ job.title }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ job.employer.company_name }} - {{ job.employer.location
+                        }}</h6>
+                    <p class="card-text">{{ job.description|truncatewords:30 }}</p>
+
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="badge bg-warning text-dark">Deadline: {{ job.deadline }}</span>
+                        {% if job.id in applied_jobs %}
+                        <button class="btn btn-sm btn-success" disabled>
+                            <i class="bi bi-check-circle"></i> Applied
+                        </button>
+                        {% else %}
+                        <a href="{% url 'apply_for_job' job.id %}" class="btn btn-sm btn-primary">Apply Now</a>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center">
+            <p class="alert alert-info">No jobs available right now. Check back later!</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

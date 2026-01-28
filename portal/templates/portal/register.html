@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Student Registration</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-success w-100">Register Now</button>
+                </form>
+                <hr class="my-4">
+                <div class="text-center">
+                    <p class="mb-1">Already have an account?</p>
+                    <a href="{% url 'login' %}" class="btn btn-outline-secondary w-100">
+                        Go to Student Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
