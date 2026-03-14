@@ -1,0 +1,7 @@
+<h2>{{ application.opportunity.title }}</h2>
+
+<p><strong>Company:</strong> {{ application.opportunity.company }}</p>
+<p><strong>Status:</strong> {{ application.status }}</p>
+<p><strong>Date Applied:</strong> {{ application.created_at }}</p>
+
+<a href="{% url 'student_dashboard' %}">Back to Dashboard</a>

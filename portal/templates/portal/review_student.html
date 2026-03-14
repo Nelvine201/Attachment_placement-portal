@@ -1,0 +1,28 @@
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold">Submitted Documents</h5>
+    </div>
+    <div class="card-body">
+        {% for app in applications %}
+        <div class="mb-5 border-bottom pb-4">
+            <h6 class="fw-bold text-primary">Vacancy: {{ app.job.title }}</h6>
+
+            {% if app.cv %}
+            <p class="small text-muted mb-2">Document: Curriculum Vitae (PDF)</p>
+            <div class="ratio ratio-16x9 mb-3" style="min-height: 600px;">
+                <iframe src="{{ app.cv.url }}" width="100%" height="100%" style="border: none;"></iframe>
+            </div>
+            {% endif %}
+
+            {% if student.transcripts %}
+            <p class="small text-muted mb-2">Document: Academic Transcripts</p>
+            <div class="ratio ratio-16x9 mb-3" style="min-height: 600px;">
+                <iframe src="{{ student.transcripts.url }}" width="100%" height="100%"></iframe>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p class="text-center py-5">No documents found for this student.</p>
+        {% endfor %}
+    </div>
+</div>

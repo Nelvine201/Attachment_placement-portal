@@ -132,4 +132,9 @@ LOGIN_REDIRECT_URL = "dashboard_redirect"
 LOGOUT_REDIRECT_URL = "login"
 # During development, this prints emails to your CMD terminal
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "portal@maseno.ac.ke"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "yourgmail@gmail.com"
+EMAIL_HOST_PASSWORD = "your_app_password"
+# DEFAULT_FROM_EMAIL = "portal@maseno.ac.ke"

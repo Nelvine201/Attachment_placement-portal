@@ -1,0 +1,31 @@
+<h3 class="mb-4">Notifications</h3>
+
+<ul class="list-group">
+
+    {% for note in notifications %}
+
+    <li class="list-group-item">
+
+        <a href="{% url 'notification_detail' note.id %}" class="text-decoration-none">
+
+            {{ note.message }}
+
+            <br>
+
+            <small class="text-muted">
+                {{ note.created_at }}
+            </small>
+
+        </a>
+
+    </li>
+
+    {% empty %}
+
+    <li class="list-group-item text-muted">
+        No notifications
+    </li>
+
+    {% endfor %}
+
+</ul>

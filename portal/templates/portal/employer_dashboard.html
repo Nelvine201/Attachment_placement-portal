@@ -1,75 +1,308 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-12 d-flex justify-content-between align-items-center">
-            <h1>Welcome, {{ employer.company_name }}</h1>
-            {% if employer.is_approved %}
-            <a href="{% url 'post_job' %}" class="btn btn-success btn-lg shadow-sm">
-                <i class="bi bi-plus-lg me-1"></i> Post New Vacancy
-            </a>
+
+<div class="container py-5" style="max-width:1100px;">
+
+    <!-- ================= HEADER ================= -->
+
+    <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-3">
+
+
+        <div class="d-flex align-items-center">
+
+            {% if employer.logo %}
+            <img src="{{ employer.logo.url }}" class="rounded shadow-sm me-3"
+                style="width:70px;height:70px;object-fit:contain;background:#f8f9fa;">
             {% else %}
-            <div class="alert alert-warning">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                Your account is pending admin approval. You will be able to post jobs once verified.
+            <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center"
+                style="width:70px;height:70px;">
+                <i class="bi bi-building fs-4 text-muted"></i>
             </div>
             {% endif %}
 
+            <div>
+                <h4 class="fw-bold mb-1">{{ employer.company_name }}</h4>
+                <small class="text-muted">Employer Dashboard</small>
+            </div>
+
         </div>
+
+        <div class="d-flex gap-2">
+
+            {% if employer.is_verified %}
+            <a href="{% url 'post_job' %}" class="btn btn-primary shadow-sm">
+                + Post Vacancy
+            </a>
+            {% endif %}
+
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="btn btn-outline-danger shadow-sm">
+                    Logout
+                </button>
+            </form>
+
+        </div>
+
+
     </div>
 
-    <div class="row mt-4">
-        <div class="col-md-4">
-            <div class="card bg-primary text-white p-3 shadow-sm">
-                <h3>{{ my_jobs.count }}</h3>
-                <p class="mb-0">Active Slots</p>
-            </div>
+    <!-- ================= STATS ================= -->
+
+    <div class="row g-4 mb-5">
+
+
+        <div class="col-md-6">
+            <a href="{% url 'active_slots' %}" class="text-decoration-none">
+                <div class="card border-0 shadow bg-primary text-white h-100">
+                    <div class="card-body text-center py-4">
+                        <h6 class="opacity-75">Active Slots</h6>
+                        <h2 class="fw-bold">{{ my_jobs.count }}</h2>
+                    </div>
+                </div>
+            </a>
         </div>
-        <div class="col-md-4">
-            <div class="card bg-info text-white p-3 shadow-sm">
-                <h3>{{ applications.count }}</h3>
-                <p class="mb-0">Total Applicants</p>
-            </div>
+
+        <div class="col-md-6">
+            <a href="{% url 'all_applications' %}" class="text-decoration-none">
+                <div class="card border-0 shadow bg-dark text-white h-100">
+                    <div class="card-body text-center py-4">
+                        <h6 class="opacity-75">Total Applications</h6>
+                        <h2 class="fw-bold">{{ applications.count }}</h2>
+                    </div>
+                </div>
+            </a>
         </div>
+
+
     </div>
 
-    <h3 class="mt-5">Recent Applications</h3>
-    <table class="table table-hover mt-3">
-        <thead class="table-dark">
-            <tr>
-                <th>Student</th>
-                <th>Applied For</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for app in applications %}
-            <tr>
-                <td>{{ app.student.get_full_name }}</td>
-                <td>{{ app.job.title }}</td>
-                <td>{{ app.created_at|date:"d M Y" }}</td>
-                <td><span class="badge bg-secondary">{{ app.status }}</span></td>
-                <td><a href="#" class="btn btn-sm btn-outline-primary">Review</a></td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5" class="text-center">No applications received yet.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <nav>
+    <!-- ================= APPLICATION STATUS OVERVIEW ================= -->
 
-        <form action="{% url 'logout' %}" method="post" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit"
-                style="background:none; border:none; color:blue; text-decoration:underline; cursor:pointer;">
-                Logout
-            </button>
-        </form>
-    </nav>
+    <!-- ================= APPLICATION STATUS OVERVIEW ================= -->
+
+    <h5 class="fw-bold mb-4">Applications Overview</h5>
+
+    <div class="accordion mb-5" id="statusAccordion">
+
+        <!-- ================= PENDING ================= -->
+
+        <div class="accordion-item border-0 shadow-sm mb-3 rounded">
+
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed bg-warning text-dark fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#pendingCollapse">
+
+                    Pending Applications ({{ pending_apps.count }})
+
+                </button>
+            </h2>
+
+            <div id="pendingCollapse" class="accordion-collapse collapse" data-bs-parent="#statusAccordion">
+
+                <div class="accordion-body">
+
+                    {% for app in pending_apps %}
+
+                    <div class="mb-2 small">
+                        <a href="{% url 'review_student' app.id %}" class="text-decoration-none text-dark">
+                            {{ app.student.full_name|default:app.student.user.username }}
+                        </a>
+                    </div>
+                    {% empty %}
+                    <small class="text-muted">No pending applications</small>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ================= ACCEPTED ================= -->
+
+        <div class="accordion-item border-0 shadow-sm mb-3 rounded">
+
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed bg-success text-white fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#acceptedCollapse">
+
+                    Accepted Applications ({{ accepted_apps.count }})
+
+                </button>
+            </h2>
+
+            <div id="acceptedCollapse" class="accordion-collapse collapse" data-bs-parent="#statusAccordion">
+
+                <div class="accordion-body">
+
+                    {% for app in accepted_apps %}
+
+                    <div class="mb-2 small">
+                        <a href="{% url 'review_student' app.id %}" class="text-decoration-none text-dark">
+                            {{ app.student.full_name|default:app.student.user.username }}
+                        </a>
+                    </div>
+                    {% empty %}
+                    <small class="text-muted">No accepted students</small>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ================= REJECTED ================= -->
+
+        <div class="accordion-item border-0 shadow-sm mb-3 rounded">
+
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed bg-danger text-white fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#rejectedCollapse">
+
+                    Rejected Applications ({{ rejected_apps.count }})
+
+                </button>
+            </h2>
+
+            <div id="rejectedCollapse" class="accordion-collapse collapse" data-bs-parent="#statusAccordion">
+
+                <div class="accordion-body">
+
+                    {% for app in rejected_apps %}
+
+                    <div class="mb-2 small">
+                        <a href="{% url 'review_student' app.id %}" class="text-decoration-none text-dark">
+                            {{ app.student.full_name|default:app.student.user.username }}
+                        </a>
+                    </div>
+                    {% empty %}
+                    <small class="text-muted">No rejected applications</small>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= RECENT APPLICATIONS ================= -->
+
+    <h5 class="fw-bold mb-4">Recent Applications</h5>
+
+    <div class="accordion" id="applicationAccordion">
+
+        {% for app in applications %}
+
+        <div class="accordion-item border shadow-sm mb-3 rounded">
+
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapse{{ app.id }}">
+
+                    <div class="d-flex justify-content-between w-100 pe-3">
+
+                        <div>
+                            <strong>
+                                {{ app.student.full_name|default:app.student.user.username }}
+                            </strong>
+                            <div class="small text-muted">
+                                {{ app.job.title }}
+                            </div>
+                        </div>
+
+                        <div class="small text-muted">
+                            {{ app.applied_on|date:"d M Y" }}
+                        </div>
+
+                    </div>
+
+                </button>
+            </h2>
+
+            <div id="collapse{{ app.id }}" class="accordion-collapse collapse" data-bs-parent="#applicationAccordion">
+
+                <div class="accordion-body">
+
+                    <p><strong>Registration no:</strong> {{ app.student.reg_no|default:"N/A" }}</p>
+                    <p><strong>Course:</strong> {{ app.student.course|default:"N/A" }}</p>
+                    <p><strong>Email:</strong> {{ app.student.email|default:"N/A" }}</p>
+
+                    <div class="mt-3 d-flex flex-wrap gap-2">
+
+                        {% if app.cv %} <a href="{{ app.cv.url }}" class="btn btn-sm btn-outline-secondary"
+                            target="_blank">
+                            View CV </a>
+                        {% endif %}
+
+                        <a href="{% url 'review_student' app.id %}" class="btn btn-sm btn-primary">
+                            Review </a>
+
+                        <a href="{% url 'update_application_status' app.id 'Accepted' %}"
+                            class="btn btn-sm btn-success">
+                            Accept </a>
+
+                        <a href="{% url 'update_application_status' app.id 'Rejected' %}" class="btn btn-sm btn-danger">
+                            Reject </a>
+
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="text-center text-muted py-4">
+            No applications found.
+        </div>
+        {% endfor %}
+
+    </div>
+
+    <!-- ================= JOB MANAGEMENT ================= -->
+
+    <h5 class="fw-bold mt-5 mb-4">Manage Posted Jobs</h5>
+
+    <div class="row g-4">
+
+        {% for job in my_jobs %}
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <h6 class="fw-bold text-primary mb-2">{{ job.title }}</h6>
+
+                    <p class="small text-muted mb-3">
+                        Deadline: {{ job.deadline }}
+                    </p>
+
+                    <div class="d-flex gap-2">
+
+                        <a href="{% url 'edit_job' job.id %}" class="btn btn-sm btn-outline-primary">
+                            Edit </a>
+
+                        <form method="post" action="{% url 'delete_job' job.id %}"
+                            onsubmit="return confirm('Delete job slot?')">
+
+                            {% csrf_token %} <button class="btn btn-sm btn-outline-danger">
+                                Delete </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        {% endfor %}
+
+    </div>
+
 </div>
+
 {% endblock %}

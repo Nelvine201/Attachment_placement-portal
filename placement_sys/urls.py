@@ -28,11 +28,14 @@ urlpatterns = [
     path("register/", views.register_student, name="register"),
     path("jobs/", views.job_list, name="jobs"),
     path("apply/<int:job_id>/", views.apply_for_job, name="apply_for_job"),
+    # path("apply/<int:job_id>/", views.apply_job, name="apply_job"),
     path(
         "login/",
         auth_views.LoginView.as_view(template_name="portal/login.html"),
         name="login",
     ),
+    # path("signup/", views.signup_view, name="signup"),
+    # path("register/", views.register, name="register"),
     path("dashboard/redirect/", views.dashboard_redirect, name="dashboard_redirect"),
     path("dashboard/", views.dashboard_redirect, name="dashboard"),
     path("dashboard/employer/", views.employer_dashboard, name="employer_dashboard"),
@@ -42,7 +45,31 @@ urlpatterns = [
     # In urls.py
     path("register/employer/", views.register_employer, name="register_employer"),
     path("post-job/", views.post_job, name="post_job"),
-]
+    # path( "status/update/<int:app_id>/<str:new_status>/",views.update_application_status,name="update_status",),
+    # path("status/update/<int:application_id>/<str:new_status>/", views.update_application_status)
+    path(
+        "status/update/<int:app_id>/<str:new_status>/",
+        views.update_application_status,
+        name="update_application_status",
+    ),
+    path(
+        "student/review/<int:student_id>/", views.review_student, name="review_student"
+    ),
+    path("job/edit/<int:job_id>/", views.edit_job, name="edit_job"),
+    path("job/delete/<int:job_id>/", views.delete_job, name="delete_job"),
+    path("register/choice/", views.register_choice, name="register_choice"),
+    path("register/student/", views.register_student, name="register_student"),
+    path("register/employer/", views.register_employer, name="register_employer"),
+    path("dashboard/active-slots/", views.active_slots, name="active_slots"),
+    path("dashboard/applications/", views.all_applications, name="all_applications"),
+    path("job/<int:job_id>/", views.job_detail, name="job_detail"),
+    path("application/<int:pk>/", views.application_detail, name="application_detail"),
+    path("notifications/", views.notifications, name="notifications"),
+    path(
+        "notification/<int:pk>/", views.notification_detail, name="notification_detail"
+    ),
+    path("about/", views.about, name="about"),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

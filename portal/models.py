@@ -13,9 +13,13 @@ insurance_validator = RegexValidator(
 
 
 # Create your models here.
+id_validator = RegexValidator(
+    regex=r"^\d{8}$", message="National ID must be exactly 8 digits"
+)
+
+
 class Student(models.Model):
-    # This links the student to a login account
-    # We use null=True so existing students don't break immediately
+
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="student_profile"
     )
@@ -24,6 +28,12 @@ class Student(models.Model):
     reg_no = models.CharField(max_length=25, unique=True)
     course = models.CharField(max_length=100)
     email = models.EmailField()
+
+    national_id = models.CharField(max_length=8, validators=[id_validator], unique=True)
+
+    # ⭐ Safe username getter (VERY IMPORTANT)
+    def get_username(self):
+        return self.user.username if self.user else ""
 
     def __str__(self):
         return self.full_name
@@ -37,7 +47,7 @@ class Employer(models.Model):
     location = models.CharField(max_length=100)
     industry = models.CharField(max_length=100)
     contact_email = models.EmailField()
-    website = models.URLField(blank=True)
+    # website = models.URLField(blank=True)
     position = models.CharField(max_length=100, null=True, blank=True)
     logo = models.ImageField(upload_to="logos/", null=True, blank=True)
     is_verified = models.BooleanField(default=False)
@@ -50,7 +60,6 @@ class JobSlot(models.Model):
     employer = models.ForeignKey(Employer, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)  # e.g. "Software Engineering Intern"
     description = models.TextField()
-    deadline = models.DateField()
     requirements = models.TextField(null=True, blank=True)
     location = models.CharField(max_length=100, default="Remote")
 
@@ -62,55 +71,56 @@ class JobSlot(models.Model):
 
 
 class Application(models.Model):
-    job = models.ForeignKey("JobSlot", on_delete=models.CASCADE)
-    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    job = models.ForeignKey(JobSlot, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
 
-    # New Required Details
-    national_id = models.CharField(max_length=20)
-    insurance_cover_no = models.CharField(max_length=50)
+    # national_id = models.CharField(max_length=8)
+    insurance_cover_no = models.CharField(
+        max_length=15, validators=[insurance_validator]
+    )
 
-    # File Uploads (will be saved in a 'documents/' folder)
-    cv = models.FileField(upload_to="applications/cvs/")
-    recommendation_letter = models.FileField(upload_to="applications/recommendations/")
-    cover_letter = models.FileField(upload_to="applications/cover_letters/")
-
-    # Optional field
-    portfolio_link = models.URLField(blank=True, null=True)
-    # We now link applications to the User, not just a text name
-    student = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    applied_on = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, default="Pending")
     cv = models.FileField(
-        upload_to="applications/cvs/",
-        validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
+        upload_to="applications/cvs/", validators=[FileExtensionValidator(["pdf"])]
     )
     recommendation_letter = models.FileField(
         upload_to="applications/recommendations/",
-        validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
+        validators=[FileExtensionValidator(["pdf"])],
     )
     cover_letter = models.FileField(
         upload_to="applications/cover_letters/",
-        validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
-    )
-    national_id = models.CharField(
-        max_length=8,
-        validators=[id_validator],
-        help_text="Enter your 7 or 8-digit National ID",
+        validators=[FileExtensionValidator(["pdf"])],
     )
 
-    insurance_cover_no = models.CharField(
-        max_length=15,
-        validators=[insurance_validator],
-        help_text="Enter your Insurance/NHIF policy number",
-    )
-    admin_feedback = models.TextField(
-        blank=True, null=True, help_text="Reason for approval/rejection"
-    )
+    portfolio_link = models.URLField(blank=True, null=True)
+
+    applied_on = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, default="Pending")
+    admin_feedback = models.TextField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ("student", "job")
+
+
+class Job(models.Model):
+    title = models.CharField(max_length=200)
+    employer = models.ForeignKey(Employer, on_delete=models.CASCADE)
+    description = models.TextField()
+    deadline = models.DateField()
+
+    def is_open(self):
+        from django.utils import timezone
+
+        return self.deadline >= timezone.now().date()
+
+
+class Notification(models.Model):
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
 
     def __str__(self):
-        return (
-            "{self.student.username if self.student else 'Unknown'} - {self.job.title}"
-        )
+        return f"Notification for {self.student.username}"
 
 
 # class Firm(models.Model):

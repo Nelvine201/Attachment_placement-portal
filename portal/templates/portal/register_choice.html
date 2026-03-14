@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <h3>Create Account</h3>
+
+    <div class="mt-4">
+        <a href="{% url 'register_student' %}" class="btn btn-primary me-3">
+            Student Registration
+        </a>
+
+        <a href="{% url 'register_employer' %}" class="btn btn-success">
+            Employer Registration
+        </a>
+    </div>
+</div>
+{% endblock %}

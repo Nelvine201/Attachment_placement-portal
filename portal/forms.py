@@ -12,7 +12,7 @@ class StudentRegistrationForm(forms.ModelForm):
 
     class Meta:
         model = Student
-        fields = ["full_name", "reg_no", "course", "email"]
+        fields = ["full_name", "reg_no", "course", "email", "national_id"]
         # This adds Bootstrap styling to the input boxes
         widgets = {
             "full_name": forms.TextInput(
@@ -33,6 +33,10 @@ class StudentRegistrationForm(forms.ModelForm):
                     "placeholder": "e.g. student@maseno.ac.ke",
                 }
             ),
+            "national_id": forms.TextInput(
+                # max_length=8,
+                attrs={"class": "form-control", "placeholder": "Enter National ID"},
+            ),
         }
 
 
@@ -52,7 +56,7 @@ class JobApplicationForm(forms.ModelForm):
     class Meta:
         model = Application
         fields = [
-            "national_id",
+            # "national_id",
             "insurance_cover_no",
             "cv",
             "recommendation_letter",
@@ -68,13 +72,13 @@ class JobApplicationForm(forms.ModelForm):
             "cover_letter": forms.FileInput(
                 attrs={"class": "form-control", "accept": ".pdf"}
             ),
-            "national_id": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "type": "number",  # Forces numeric keypad on mobile
-                    "placeholder": "e.g. 12345678",
-                }
-            ),
+            # "national_id": forms.TextInput(
+            # attrs={
+            # "class": "form-control",
+            # "type": "number",  # Forces numeric keypad on mobile
+            # "placeholder": "e.g. 12345678",
+            # }
+            # ),
             "insurance_cover_no": forms.TextInput(attrs={"class": "form-control"}),
             "portfolio_link": forms.URLInput(attrs={"class": "form-control"}),
         }
@@ -83,32 +87,37 @@ class JobApplicationForm(forms.ModelForm):
 class EmployerRegistrationForm(forms.ModelForm):
     username = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
     email = forms.EmailField(widget=forms.EmailInput(attrs={"class": "form-control"}))
+
     password = forms.CharField(
-        widget=forms.PasswordInput(attrs={"class": "form-control"})
+        widget=forms.PasswordInput(attrs={"class": "form-control"}),
+        min_length=6,
     )
+
     confirm_password = forms.CharField(
-        widget=forms.PasswordInput(attrs={"class": "form-control"})
+        widget=forms.PasswordInput(attrs={"class": "form-control"}),
+        min_length=6,
     )
 
     company_name = forms.CharField(
         widget=forms.TextInput(attrs={"class": "form-control"})
     )
+
     industry = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
 
     class Meta:
         model = Employer
-        fields = ["company_name", "industry", "location", "website"]
-        widgets = {
-            "location": forms.TextInput(attrs={"class": "form-control"}),
-            "website": forms.URLInput(
-                attrs={"class": "form-control", "placeholder": "https://..."}
-            ),
-        }
+        fields = ["company_name", "industry", "location"]
 
     def clean(self):
         cleaned_data = super().clean()
-        if cleaned_data.get("password") != cleaned_data.get("confirm_password"):
-            raise forms.ValidationError("Passwords do not match!")
+
+        password = cleaned_data.get("password")
+        confirm_password = cleaned_data.get("confirm_password")
+
+        if password and confirm_password:
+            if password != confirm_password:
+                raise forms.ValidationError("Passwords do not match!")
+
         return cleaned_data
 
 
@@ -117,6 +126,12 @@ class JobPostForm(forms.ModelForm):
         model = JobSlot
         fields = ["title", "description", "requirements", "location", "deadline"]
         widgets = {
+            "title": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "e.g. Software Engineer"}
+            ),
+            "location": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "City or Remote"}
+            ),
             "deadline": forms.DateInput(
                 attrs={"type": "date", "class": "form-control"}
             ),

@@ -20,14 +20,27 @@
 
                     <div class="d-flex justify-content-between align-items-center mt-3">
                         <span class="badge bg-warning text-dark">Deadline: {{ job.deadline }}</span>
+                        {% if job.deadline >= today %}
+                        <p>
+                            Time left: <span id="countdown-{{ job.id }}"></span>
+                        </p>
+                        <a href="{% url 'apply_job' job.id %}" class="btn btn-primary">
+                            Apply Now
+                        </a>
+                        {% else %}
+                        <button class="btn btn-secondary" disabled>
+                            Deadline Passed
+                        </button>
+                        {% endif %}
                         {% if job.id in applied_jobs %}
                         <button class="btn btn-sm btn-success" disabled>
                             <i class="bi bi-check-circle"></i> Applied
                         </button>
                         {% else %}
-                        <a href="{% url 'apply_for_job' job.id %}" class="btn btn-sm btn-primary">Apply Now</a>
-                        {% endif %}
+                        <h3 class="text-primary">{{ job.title }}</h3>
 
+
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -39,4 +52,32 @@
         {% endfor %}
     </div>
 </div>
+<script>
+
+    function startCountdown(deadline, elementId) {
+
+        const endDate = new Date(deadline).getTime();
+
+        const timer = setInterval(function () {
+
+            const now = new Date().getTime();
+            const distance = endDate - now;
+
+            if (distance < 0) {
+                document.getElementById(elementId).innerHTML = "Deadline Passed";
+                clearInterval(timer);
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+
+            document.getElementById(elementId).innerHTML =
+                days + "d " + hours + "h " + minutes + "m ";
+
+        }, 1000);
+    }
+
+</script>
 {% endblock %}

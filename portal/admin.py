@@ -7,35 +7,26 @@ from .models import Student, Employer, JobSlot
 
 @admin.register(Employer)
 class EmployerAdmin(admin.ModelAdmin):
-    # This adds columns to the list view so you don't have to click each one
-    # list_display = ("company_name", "user", "is_approved")
-    # list_filter = ("is_approved",)  # Adds a filter sidebar
-    pass
+    list_display = ("company_name", "user", "is_verified")
+    list_filter = ("is_verified",)
     search_fields = ("company_name",)
-    actions = ["approve_employers"]
+    pass
+    list_editable = ("is_verified",)  # Quick approval from the list
+    actions = ["verify_employers"]
 
-    def approve_employers(self, request, queryset):
-        queryset.update(is_approved=True)
+    def verify_employers(self, request, queryset):
+        queryset.update(is_verified=True)
 
-    approve_employers.short_description = "Approve selected employers"
+    verify_employers.short_description = "verify selected employers"
 
 
-admin.site.register(JobSlot)
-# class StudentAdmin(admin.ModelAdmin):
-# This tells Django which columns to show in the table
-# list_display = ("full_name", "reg_no", "course", "email")
-# This adds a search bar
-# search_fields = ("full_name", "reg_no")
-# list_display = ('company_name', 'user', 'is_approved')
-# list_filter = ('is_approved',) # Adds a filter sidebar
-# search_fields = ('company_name',)
-# actions = ['approve_employers']
-# def approve_employers(self, request, queryset):
-#       queryset.update(is_approved=True)
-#  approve_employers.short_description = "Approve selected employers"
+@admin.register(JobSlot)
+class JobSlotAdmin(admin.ModelAdmin):
+    list_display = ("title", "employer", "location", "deadline", "created_at")
+    list_filter = ("employer", "deadline")
+    search_fields = ("title", "description")
 
-# admin.site.register(JobSlot)
 
-# admin.site.register(Student, StudentAdmin)
-# admin.site.register(Employer)
-# admin.site.register(JobSlot)
+@admin.register(Student)
+class StudentAdmin(admin.ModelAdmin):
+    list_display = ("user", "full_name", "reg_no", "course", "national_id")

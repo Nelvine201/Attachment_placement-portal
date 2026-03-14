@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">About CareerBridge Industrial Attachment Portal</h1>
+        <p class="text-muted">
+            Connecting students with organizations for meaningful industrial attachment opportunities.
+        </p>
+    </div>
+
+    <div class="row align-items-center mb-5">
+
+        <div class="col-md-6">
+            <img src="{% static 'images/portal.png' %}" class="img-fluid rounded shadow">
+        </div>
+
+        <div class="col-md-6">
+            <h3>Who we are</h3>
+            <p>
+                CareerBridge is a web-based industrial attachment portal designed to connect students, universities,
+                and employers through meaningful real-world career opportunities. The platform simplifies the
+                process of finding and managing industrial attachments by allowing students to browse available
+                placements,
+                apply for opportunities, and track their application status in one centralized system. Employers can
+                easily advertise internship positions and review student applications, while universities are able
+                to support and monitor the placement process. CareerBridge bridges the gap between academic learning
+                and professional practice, helping students gain valuable industry experience before entering the
+                workforce.
+
+            </p>
+
+            <p>
+                Students can browse opportunities, apply for placements, and track their
+                application status through a simple dashboard.
+            </p>
+
+            <p>
+                Employers can review applications, accept or reject students, and manage
+                available attachment positions easily.
+            </p>
+        </div>
+
+    </div>
+
+    <hr>
+
+    <div class="row text-center mt-4">
+
+        <div class="col-md-4">
+            <h4>Students</h4>
+            <p>
+                Browse available industrial attachment opportunities and apply directly
+                through the portal.
+            </p>
+        </div>
+
+        <div class="col-md-4">
+            <h4>Employers</h4>
+            <p>
+                Post internship opportunities and select the best candidates for your
+                organization.
+            </p>
+        </div>
+
+        <div class="col-md-4">
+            <h4>Universities</h4>
+            <p>
+                Monitor student placement progress and ensure successful industrial
+                training experiences.
+            </p>
+        </div>
+
+    </div>
+
+    <hr class="mt-5">
+
+    <div class="text-center mt-4">
+
+        <h4>Connect With Us</h4>
+
+        <p class="text-muted">Follow our updates and reach out.</p>
+
+        <p>
+            📧 Email: support@sciportal.com <br>
+            🌐 Website: www.sciportal.com <br>
+            💼 LinkedIn: SCI Industrial Portal <br>
+            📸 Instagram: @sci_attachment_portal
+        </p>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-5" style="max-width:800px;">
+
+    <a href="/jobs/" class="btn btn-sm btn-outline-secondary mb-4">
+        ← Back to Opportunities
+    </a>
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-body">
+
+            <h3 class="fw-bold text-primary mb-3">
+                {{ job.title }}
+            </h3>
+
+            <p class="text-muted mb-4">
+                <strong>Location:</strong> {{ job.location }} <br>
+                <strong>Deadline:</strong> {{ job.deadline }}
+                {% if job.deadline < today %} <span class="badge bg-danger">Closed</span>
+                    {% else %}
+                    <span class="badge bg-success">Open</span>
+                    {% endif %}
+            </p>
+
+            <hr>
+
+            <h5 class="fw-bold">Description</h5>
+            <p>
+                {{ job.description }}
+            </p>
+
+            <h5 class="fw-bold mt-4">Requirements</h5>
+            <p>
+                {{ job.requirements }}
+            </p>
+
+            <hr class="mt-4">
+
+            {% if applied %}
+
+            <button class="btn btn-secondary w-100" disabled>
+                Already Applied
+            </button>
+
+            {% else %}
+
+            <a href="{% url 'apply_for_job' job.id %}" class="btn btn-success w-100">
+                Apply for this Opportunity
+            </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

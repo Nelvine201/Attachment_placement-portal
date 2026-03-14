@@ -5,10 +5,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .forms import StudentRegistrationForm
 from .forms import JobApplicationForm, StudentProfileForm, EmployerRegistrationForm
-from .models import JobSlot, Application, Student, Employer
+from .models import JobSlot, Application, Student, Employer, Notification
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
+from django.utils import timezone
 from django.contrib.auth import login, authenticate
 
 from .forms import JobPostForm
@@ -20,45 +21,57 @@ def home(request):
     return render(request, "home.html")
 
 
+def about(request):
+    return render(request, "about.html")
+
+
+# def about(request):
+#   return render(request, "about.html")
+
+
 def register_student(request):
     if request.method == "POST":
         form = StudentRegistrationForm(request.POST)
+
         if form.is_valid():
-            # 1. Get the data from the cleaned form
             full_name = form.cleaned_data.get("full_name")
             reg_no = form.cleaned_data.get("reg_no")
             email = form.cleaned_data.get("email")
             course = form.cleaned_data.get("course")
             password = form.cleaned_data.get("password")
+            national_id = form.cleaned_data.get("national_id")
 
-            # 2. Check if user already exists
-            if not User.objects.filter(username=reg_no).exists():
-                # 3. Create the Login Account (Security Engine)
-                user = User.objects.create_user(
-                    username=reg_no, email=email, password=password
-                )
-
-                # 4. Create the Student Profile (Your original details)
-                # We link it to the user we just created
-                Student.objects.create(
-                    user=user,
-                    full_name=full_name,
-                    reg_no=reg_no,
-                    email=email,
-                    course=course,
-                )
-
-                messages.success(
-                    request,
-                    "Registration successful! Please login with your Reg No and Password.",
-                )
-                return redirect("login")
-            else:
+            # Check if reg_no already exists
+            if User.objects.filter(username=reg_no).exists():
                 messages.error(
                     request, "A student with this Registration Number already exists."
                 )
+                return render(request, "portal/register.html", {"form": form})
+
+            # Check if national ID already exists
+            if Student.objects.filter(national_id=national_id).exists():
+                messages.error(request, "National ID already exists.")
+                return render(request, "portal/register.html", {"form": form})
+
+            # Create login account
+            user = User.objects.create_user(
+                username=reg_no, email=email, password=password
+            )
+
+            # Create student profile
+            Student.objects.create(
+                user=user,
+                full_name=full_name,
+                reg_no=reg_no,
+                email=email,
+                course=course,
+                national_id=national_id,
+            )
+
+            messages.success(request, "Registration successful! Please login.")
+            return redirect("login")
+
     else:
-        # If it's a GET request, just show the empty form
         form = StudentRegistrationForm()
 
     return render(request, "portal/register.html", {"form": form})
@@ -66,46 +79,27 @@ def register_student(request):
 
 @login_required
 def student_dashboard(request):
-    # Get the student profile and their applications
-    # We use 'filter' to show only applications for the logged-in student
-    my_applications = Application.objects.filter(student=request.user)
-
-    # Try to find the student profile details
     try:
-        student_profile = request.user.student
-    except Student.DoesNotExist:
-        student_profile = None
-
-    return render(
-        request,
-        "portal/dashboard.html",
-        {"applications": my_applications, "profile": student_profile},
-    )
-
-
-@login_required
-def student_dashboard(request):
-    # 1. Get the student profile linked to the logged-in user
-    try:
-        # Use the related_name we discussed or filter manually
         student_profile = Student.objects.get(user=request.user)
     except Student.DoesNotExist:
         return redirect("dashboard_redirect")
 
-    # 2. Filter applications
-    # If Application model has 'student = ForeignKey(User)', use request.user
-    # If Application model has 'student = ForeignKey(Student)', use student_profile
+    # Correct filtering
+    applications = Application.objects.filter(student=student_profile)
+    notifications = Notification.objects.filter(student=request.user).order_by(
+        "-created_at"
+    )
 
-    # Based on your error, try changing it to this:
-    applications = Application.objects.filter(student=request.user)
-
-    # IF THAT FAILS, try:
-    # applications = Application.objects.filter(student=student_profile)
-
+    unread_notifications_count = notifications.filter(is_read=False).count()
     return render(
         request,
         "portal/student_dashboard.html",
-        {"student": student_profile, "applications": applications},
+        {
+            "student": student_profile,
+            "applications": applications,
+            "notifications": notifications[:5],
+            "unread_notifications_count": unread_notifications_count,
+        },
     )
 
 
@@ -127,65 +121,94 @@ def edit_profile(request):
 
 @login_required
 def dashboard_redirect(request):
-    # Check if the user is an Employer
+
     if hasattr(request.user, "employer_profile"):
         return redirect("employer_dashboard")
 
-    # Check if the user is a Student
     elif hasattr(request.user, "student_profile"):
         return redirect("student_dashboard")
 
-    # If it's just a superuser (admin)
     elif request.user.is_superuser:
         return redirect("/admin/")
 
-    else:
-        # If they somehow have no profile, send them to a generic page or logout
-        return render(request, "portal/no_profile.html")
+    return redirect("home")
 
 
 @login_required
 def employer_dashboard(request):
-    # Get the employer profile linked to the user
-    employer = get_object_or_404(Employer, user=request.user)
 
-    # Get all jobs posted by this Employer
+    try:
+        employer = Employer.objects.get(user=request.user)
+    except Employer.DoesNotExist:
+        return redirect("dashboard_redirect")
+
     my_jobs = JobSlot.objects.filter(employer=employer)
 
-    # Get all applications for those jobs
-    applications = Application.objects.filter(job__employer=employer).order_by(
-        "-applied_on"
+    applications = Application.objects.filter(job__employer=employer).select_related(
+        "student", "job"
     )
+    pending_apps = applications.filter(status="Pending")
+    accepted_apps = applications.filter(status="Accepted")
+    rejected_apps = applications.filter(status="Rejected")
 
     context = {
         "employer": employer,
         "my_jobs": my_jobs,
         "applications": applications,
+        "pending_apps": pending_apps,
+        "accepted_apps": accepted_apps,
+        "rejected_apps": rejected_apps,
     }
+
     return render(request, "portal/employer_dashboard.html", context)
 
 
+@login_required
 def job_list(request):
     jobs = JobSlot.objects.all()
 
-    # If the user is logged in, we find the jobs they already applied for
+    # Default value
+    applied_job_ids = []
+
+    # If user is logged in, check applications
     if request.user.is_authenticated:
-        applied_job_ids = Application.objects.filter(
-            student=request.user  # Changed from student_email="test@..."
-        ).values_list("job_id", flat=True)
-    else:
-        applied_job_ids = []
+        try:
+            student_profile = request.user.student_profile
+
+            applied_job_ids = Application.objects.filter(
+                student=student_profile
+            ).values_list("job_id", flat=True)
+
+        except Student.DoesNotExist:
+            applied_job_ids = []
 
     return render(
         request,
         "portal/job_list.html",
-        {"jobs": jobs, "applied_job_ids": applied_job_ids},
+        {
+            "jobs": jobs,
+            "applied_job_ids": applied_job_ids,
+        },
     )
 
 
-@login_required
+@login_required(login_url="signup")
 def apply_for_job(request, job_id):
     job = get_object_or_404(JobSlot, id=job_id)
+    student = get_object_or_404(Student, user=request.user)
+
+    if job.deadline < timezone.now().date():
+        messages.error(request, "Application deadline has passed.")
+        return redirect("jobs")
+
+    already_applied = Application.objects.filter(student=student, job=job).exists()
+
+    if already_applied:
+        messages.warning(
+            request,
+            f"You have already applied for the {job.title} position at {job.employer.company_name}.",
+        )
+        return redirect("student_dashboard")
 
     if request.method == "POST":
         # request.FILES is required for CV and Letters
@@ -193,11 +216,11 @@ def apply_for_job(request, job_id):
         if form.is_valid():
             application = form.save(commit=False)
             application.job = job
-            application.student = request.user
+            application.student = student
             application.save()
             # --- SEND EMAIL ---
             subject = f"Application Received: {job.title}"
-            message = f"Hi {request.user.first_name},\n\nYour application for {job.title} at {job.company_name} has been received successfully. You can track your status on your dashboard."
+            message = f"Hi {request.user.first_name},\n\nYour application for {job.title} at {job.employer.company_name} has been received successfully. You can track your status on your dashboard."
             recipient_list = [request.user.email]
 
             try:
@@ -216,55 +239,270 @@ def apply_for_job(request, job_id):
     return render(request, "portal/apply_form.html", {"form": form, "job": job})
 
 
-def register_employer(request):
-    if request.method == "POST":
-        form = EmployerRegistrationForm(request.POST)
-        if form.is_valid():
-            # 1. First, create the User (the account)
-            # We use commit=False so we can handle it before saving to the DB
-            employer_instance = form.save(commit=False)
+@login_required
+def review_student(request, student_id):
+    # 1. Get the student profile
+    try:
+        student_profile = Student.objects.get(id=student_id)
+    except Student.DoesNotExist:
+        student_profile = get_object_or_404(Student, user__id=student_id)
 
-            # 2. IMPORTANT: We need to create/find the user account first.
-            # Usually, in these types of forms, the User is created inside
-            # the form's own save method, or you need to create it here.
+    # 2. Get the employer profile
+    employer_profile = get_object_or_404(Employer, user=request.user)
 
-            # Try this logic:
-            user = User.objects.create_user(
-                username=form.cleaned_data["username"],
-                password=form.cleaned_data["password"],
-                email=form.cleaned_data.get("email", ""),
-            )
-
-            # 3. NOW link the user to the employer instance
-            employer_instance.user = user
-            employer_instance.save()
-
-            # 4. Log them in and go to the dashboard
-            login(request, user)
-            return redirect("employer_dashboard")
-    else:
-        form = EmployerRegistrationForm()
-    return render(request, "portal/register_employer.html", {"form": form})
+    # 3. Use 'applications' (plural) and remove .first()
+    # This ensures the template loop {% for app in applications %} works
+    applications = Application.objects.filter(
+        student=student_profile,
+        job__employer=employer_profile,
+    )
+    return render(
+        request,
+        "portal/review_student.html",
+        {
+            "student": student_profile,
+            "applications": applications,  # <--- Changed this name and value
+        },
+    )
 
 
 @login_required
+def edit_job(request, job_id):
+    # Ensure only the employer who created the job can edit it
+    job = get_object_or_404(JobSlot, id=job_id, employer__user=request.user)
+
+    if request.method == "POST":
+        # 'instance=job' is the magic part—it tells Django to update the existing record
+        form = JobPostForm(request.POST, instance=job)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Job updated successfully!")
+            return redirect("employer_dashboard")
+    else:
+        form = JobPostForm(instance=job)
+
+    return render(
+        request, "portal/post_job.html", {"form": form, "edit_mode": True, "job": job}
+    )
+
+
+@login_required
+def delete_job(request, job_id):
+    job = get_object_or_404(JobSlot, id=job_id, employer__user=request.user)
+    if request.method == "POST":
+        job.delete()
+        messages.success(request, "Job deleted successfully!")
+    return redirect("employer_dashboard")
+
+
+# login view......
+
+
+def login_view(request):
+
+    if request.method == "POST":
+
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            return redirect("dashboard_redirect")
+
+        messages.error(request, "Invalid username or password")
+
+    return render(request, "portal/login.html")
+
+
+# post job
+@login_required
 def post_job(request):
-    # 1. Get the employer profile
+
     employer = get_object_or_404(Employer, user=request.user)
 
-    # 2. Check Approval Status
-    if not employer.is_approved:
+    if not employer.is_verified:
         return render(request, "portal/not_approved.html")
 
-    # 3. Handle Form Submission
     if request.method == "POST":
         form = JobPostForm(request.POST)
+
         if form.is_valid():
             job = form.save(commit=False)
-            job.employer = employer  # Automatically link the job to this employer
+            job.employer = employer
             job.save()
+
             return redirect("employer_dashboard")
+
     else:
         form = JobPostForm()
 
     return render(request, "portal/post_job.html", {"form": form})
+
+
+# update status----
+
+
+# employer register
+def register_employer(request):
+    if request.method == "POST":
+        form = EmployerRegistrationForm(request.POST)
+
+        if form.is_valid():
+            username = form.cleaned_data["username"]
+            email = form.cleaned_data.get("email", "")
+            password = form.cleaned_data["password"]
+
+            # Prevent duplicate usernames
+            if User.objects.filter(username=username).exists():
+                messages.error(request, "Username already exists")
+                return redirect("register_employer")
+
+            # Create login account (password hashed automatically)
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+            )
+
+            # Create employer profile
+            Employer.objects.create(
+                user=user,
+                company_name=form.cleaned_data["company_name"],
+                location=form.cleaned_data["location"],
+                industry=form.cleaned_data["industry"],
+                contact_email=form.cleaned_data.get("email", ""),
+            )
+
+            messages.success(
+                request, "Employer registered successfully. You can now login."
+            )
+            return redirect("login")
+
+        else:
+            print(form.errors)
+            return render(request, "portal/register_employer.html", {"form": form})
+
+    else:
+        form = EmployerRegistrationForm()
+        return render(request, "portal/register_employer.html", {"form": form})
+
+
+# login(request, user)
+
+# return redirect("dashboard_redirect")
+
+# else:
+#   print(form.errors)
+
+
+# return render(request, "portal/register_employer.html", {"form": form})
+def register_choice(request):
+    return render(request, "portal/register_choice.html")
+
+
+@login_required
+def active_slots(request):
+    employer = get_object_or_404(Employer, user=request.user)
+
+    jobs = JobSlot.objects.filter(
+        employer=employer, deadline__gte=timezone.now().date()
+    )
+
+    return render(request, "portal/active_slots.html", {"jobs": jobs})
+
+
+@login_required
+def all_applications(request):
+    employer = get_object_or_404(Employer, user=request.user)
+
+    applications = Application.objects.filter(job__employer=employer).select_related(
+        "student", "job"
+    )
+
+    return render(
+        request, "portal/all_applications.html", {"applications": applications}
+    )
+
+
+def job_detail(request, job_id):
+    job = JobSlot.objects.get(id=job_id)
+
+    applied = False
+    if request.user.is_authenticated:
+        try:
+            student = Student.objects.get(user=request.user)
+            applied = Application.objects.filter(student=student, job=job).exists()
+        except Student.DoesNotExist:
+            pass
+
+    context = {
+        "job": job,
+        "today": timezone.now().date(),
+        "applied": applied,
+    }
+
+    return render(request, "portal/job_detail.html", context)
+
+
+def application_detail(request, pk):
+    application = get_object_or_404(Application, id=pk)
+    return render(
+        request, "student/application_detail.html", {"application": application}
+    )
+
+
+@login_required
+def update_application_status(request, app_id, new_status):
+
+    application = Application.objects.get(id=app_id)
+    application.status = new_status
+    application.save()
+
+    student_email = application.student.user.email
+
+    message = f"""
+Hello {application.student.user.username},
+
+Your application for {application.job.title}
+has been {new_status}.
+
+Please login to SCI Portal to download your letter.
+"""
+
+    send_mail(
+        "SCI Portal Application Update",
+        message,
+        "portal@sci.com",
+        [student_email],
+        fail_silently=False,
+    )
+
+    Notification.objects.create(
+        student=application.student.user,
+        message=f"Your application for {application.job.title} has been {new_status}. Check your email and download your letter.",
+    )
+
+    return redirect("employer_dashboard")
+
+
+def notifications(request):
+
+    notifications = Notification.objects.filter(student=request.user).order_by(
+        "-created_at"
+    )
+
+    notifications.update(is_read=True)
+
+    return render(request, "notifications.html", {"notifications": notifications})
+
+
+def notification_detail(request, pk):
+
+    notification = get_object_or_404(Notification, id=pk)
+
+    notification.is_read = True
+    notification.save()
+
+    return render(request, "notification_detail.html", {"notification": notification})
