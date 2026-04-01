@@ -1,34 +1,68 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+    .slot-filter {
+        border-radius: 999px;
+        padding: 6px 14px;
+        text-decoration: none;
+        border: 1px solid #cfd9ff;
+        color: #2642a5;
+        background: #fff;
+    }
+
+    .slot-filter.active {
+        background: #2f63ff;
+        color: #fff;
+        border-color: #2f63ff;
+    }
+
+    .slot-card {
+        transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+
+    .slot-card:hover {
+        transform: translateY(-4px);
+        background-color: #eef3ff;
+    }
+</style>
+
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Available Placement Opportunities</h2>
         <span class="badge bg-info text-dark">Total: {{ jobs.count }}</span>
+    </div>
+    <div class="d-flex gap-2 mb-4">
+        <a href="{% url 'jobs' %}?status=all" class="slot-filter {% if status_filter == 'all' %}active{% endif %}">All
+            Slots</a>
+        <a href="{% url 'jobs' %}?status=active"
+            class="slot-filter {% if status_filter == 'active' %}active{% endif %}">Active Slots</a>
+        <a href="{% url 'jobs' %}?status=closed"
+            class="slot-filter {% if status_filter == 'closed' %}active{% endif %}">Closed Slots</a>
     </div>
 
     <div class="row">
         {% for job in jobs %}
         <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card h-100 shadow-sm">
+            <div class="card h-100 shadow-sm slot-card">
                 <div class="card-body">
                     <h5>
                         <a href="{% url 'job_detail' job.id %}" class="text-primary text-decoration-none">
                             {{ job.title }}
                         </a>
                     </h5>
-                    <h6 class="card-subtitle mb-2 text-muted">{{ job.company_name }}</h6>
+                    <!--<h6 class="card-subtitle mb-2 text-muted">{{ job.company_name }}</h6>--->
+                    <h6 class="card-subtitle mb-2 text-muted">{{ job.employer.company_name }}</h6>
                     <p class="card-text text-truncate">{{ job.description }}</p>
 
                     <ul class="list-unstyled small">
                         <li><strong>Location:</strong> {{ job.location }}</li>
                         <li><strong>Deadline:</strong> {{ job.deadline|date:"M d, Y" }}</li>
-
                     </ul>
                 </div>
                 <div class="card-footer bg-transparent border-top-0 pb-3">
 
-                    <div class="card-footer bg-transparent border-top-0 pb-3">
+                    <!---<div class="card-footer bg-transparent border-top-0 pb-3">
                         {% if job.id in applied_job_ids %}
                         <button class="btn btn-secondary w-100" disabled>
                             <i class="bi bi-check-circle"></i> Already Applied
@@ -44,8 +78,25 @@
                         </a>
                         {% endif %}
                         {% endif %}
-                    </div>
-
+                    </div>--->
+                    {% if job.deadline < today %} <button class="btn btn-danger w-100" disabled>
+                        Deadline has passed!! 😢
+                        </button>
+                        {% elif job.id in applied_job_ids %}
+                        <button class="btn btn-secondary w-100" disabled>
+                            <i class="bi bi-check-circle"></i> Already Applied
+                        </button>
+                        {% else %}
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'apply_for_job' job.id %}" class="btn btn-success w-100">
+                            Apply Now
+                        </a>
+                        {% else %}
+                        <a href="{% url 'register' %}" class="btn btn-primary w-100">
+                            Sign up to Apply
+                        </a>
+                        {% endif %}
+                        {% endif %}
                 </div>
             </div>
         </div>

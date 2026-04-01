@@ -223,7 +223,15 @@ def employer_dashboard(request):
 
 @login_required
 def job_list(request):
-    jobs = JobSlot.objects.all()
+    # jobs = JobSlot.objects.all()
+    today = timezone.now().date()
+    status_filter = request.GET.get("status", "all")
+
+    jobs = JobSlot.objects.all().order_by("-created_at")
+    if status_filter == "active":
+        jobs = jobs.filter(deadline__gte=today)
+    elif status_filter == "closed":
+        jobs = jobs.filter(deadline__lt=today)
 
     # Default value
     applied_job_ids = []
@@ -246,6 +254,8 @@ def job_list(request):
         {
             "jobs": jobs,
             "applied_job_ids": applied_job_ids,
+            "status_filter": status_filter,
+            "today": today,
         },
     )
 
