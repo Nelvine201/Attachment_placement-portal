@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row justify-content-center">
+<!--<div class="row justify-content-center">
     <div class="col-md-6">
         <div class="card shadow">
             <div class="card-header bg-primary text-white">
@@ -20,7 +20,65 @@
                         Go to Student Login
                     </a>
                 </div>
-            </div>
+            </div>--->
+<style>
+    .register-wrap {
+        max-width: 920px;
+        margin: 0 auto;
+    }
+
+    .register-card {
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.78);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(8px);
+        box-shadow: 0 16px 32px rgba(32, 52, 110, 0.12);
+    }
+
+    .register-pane {
+        padding: 32px;
+    }
+
+    .register-accent {
+        background: linear-gradient(140deg, #2f63ff, #16b7ff);
+        color: #fff;
+    }
+
+    .register-form p {
+        margin-bottom: 16px;
+    }
+
+    .register-form input,
+    .register-form select,
+    .register-form textarea {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid #dbe3ff;
+        padding: 10px 12px;
+    }
+</style>
+
+<div class="register-wrap">
+    <div class="row g-0 register-card overflow-hidden">
+        <div class="col-lg-5 register-pane register-accent">
+            <h3 class="fw-bold">Join CareerBridge</h3>
+            <p class="mb-3">Create your student profile to unlock applications and track opportunities in one place.</p>
+            <ul class="mb-0">
+                <li class="mb-2">One-click apply flow</li>
+                <li class="mb-2">Deadline reminders</li>
+                <li>Employer feedback updates</li>
+            </ul>
+        </div>
+        <div class="col-lg-7 register-pane">
+            <h4 class="fw-bold mb-3">Student Registration</h4>
+            <form method="POST" class="register-form">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary w-100 py-2 mt-2">Create Student Account</button>
+            </form>
+            <hr class="my-4">
+            <p class="mb-1 text-muted">Already have an account?</p>
+            <a href="{% url 'login' %}" class="btn btn-outline-secondary w-100">Student Sign In</a>
         </div>
     </div>
 </div>

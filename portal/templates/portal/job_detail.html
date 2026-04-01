@@ -46,10 +46,16 @@
             </button>
 
             {% else %}
+            {% if user.is_authenticated %}
 
             <a href="{% url 'apply_for_job' job.id %}" class="btn btn-success w-100">
                 Apply for this Opportunity
             </a>
+            {% else %}
+            <a href="{% url 'register' %}" class="btn btn-primary w-100">
+                Register as Student to Apply
+            </a>
+            {% endif %}
 
             {% endif %}
 
