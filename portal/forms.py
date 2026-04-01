@@ -3,48 +3,43 @@ from .models import Student
 from .models import Application
 from .models import Employer
 from .models import JobSlot
+from django.contrib.auth.password_validation import (
+    password_validators_help_text_html,
+    validate_password,
+)
 
 
 class StudentRegistrationForm(forms.ModelForm):
     password = forms.CharField(
-        widget=forms.PasswordInput(attrs={"class": "form-control"})
+        widget=forms.PasswordInput(
+            attrs={"class": "form-control", "id": "id_password"}
+        ),
+        help_text=password_validators_help_text_html(),
     )
 
     class Meta:
         model = Student
         fields = ["full_name", "reg_no", "course", "email", "national_id"]
-        # This adds Bootstrap styling to the input boxes
+
         widgets = {
-            "full_name": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "Enter Full Name"}
-            ),
-            "reg_no": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "e.g. CI/001/2022"}
-            ),
-            "course": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "e.g. BSc. Computer Science",
-                }
-            ),
-            "email": forms.EmailInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "e.g. student@maseno.ac.ke",
-                }
-            ),
-            "national_id": forms.TextInput(
-                # max_length=8,
-                attrs={"class": "form-control", "placeholder": "Enter National ID"},
-            ),
+            "full_name": forms.TextInput(attrs={"class": "form-control"}),
+            "reg_no": forms.TextInput(attrs={"class": "form-control"}),
+            "course": forms.TextInput(attrs={"class": "form-control"}),
+            "email": forms.EmailInput(attrs={"class": "form-control"}),
+            "national_id": forms.TextInput(attrs={"class": "form-control"}),
         }
 
+    def clean_password(self):
+        password = self.cleaned_data.get("password")
+        validate_password(password)
+        return password
 
-# portal/forms.py
+
 class StudentProfileForm(forms.ModelForm):
     class Meta:
         model = Student
-        fields = ["full_name", "course", "email"]  # Fields the student can change
+        fields = ["full_name", "course", "email"]
+
         widgets = {
             "full_name": forms.TextInput(attrs={"class": "form-control"}),
             "course": forms.TextInput(attrs={"class": "form-control"}),
@@ -90,18 +85,16 @@ class EmployerRegistrationForm(forms.ModelForm):
 
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={"class": "form-control"}),
-        min_length=6,
+        help_text=password_validators_help_text_html(),
     )
 
     confirm_password = forms.CharField(
-        widget=forms.PasswordInput(attrs={"class": "form-control"}),
-        min_length=6,
+        widget=forms.PasswordInput(attrs={"class": "form-control"})
     )
 
     company_name = forms.CharField(
         widget=forms.TextInput(attrs={"class": "form-control"})
     )
-
     industry = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
 
     class Meta:
@@ -110,13 +103,14 @@ class EmployerRegistrationForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-
         password = cleaned_data.get("password")
         confirm_password = cleaned_data.get("confirm_password")
 
-        if password and confirm_password:
-            if password != confirm_password:
-                raise forms.ValidationError("Passwords do not match!")
+        if password:
+            validate_password(password)
+
+        if password != confirm_password:
+            raise forms.ValidationError("Passwords do not match!")
 
         return cleaned_data
 
@@ -138,3 +132,14 @@ class JobPostForm(forms.ModelForm):
             "description": forms.Textarea(attrs={"rows": 4, "class": "form-control"}),
             # Add classes to other fields for Bootstrap styling
         }
+
+
+class ForgotCredentialsForm(forms.Form):
+    email = forms.EmailField(
+        widget=forms.EmailInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Enter your registered email",
+            }
+        )
+    )

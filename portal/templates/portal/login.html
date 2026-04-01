@@ -22,7 +22,17 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Password</label>
-                            <input type="password" name="password" class="form-control" required>
+
+                            <div class="input-group">
+                                <input type="password" id="login_password" name="password" class="form-control"
+                                    required>
+
+                                <button type="button" class="btn btn-outline-secondary"
+                                    onclick="togglePassword('login_password', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Login</button>
                     </form>
@@ -31,8 +41,25 @@
                                 Create Account
                             </a></small>
                     </div>
+                    <div class="mt-2 text-center">
+                        <small><a href="{% url 'forgot_credentials' %}">Forgot username or password?</a></small>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-    {% endblock %}
+            <div>
+            </div>
+            <script>
+                function togglePassword(inputId, button) {
+                    const input = document.getElementById(inputId);
+                    const icon = button.querySelector('i');
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.className = 'bi bi-eye-slash';
+                    } else {
+                        input.type = 'password';
+                        icon.className = 'bi bi-eye';
+                    }
+                }
+            </script>
+
+            {% endblock %}

@@ -3,7 +3,7 @@
 {% block content %}
 <div class="p-5 mb-4 bg-light rounded-3 shadow-sm border">
     <div class="container-fluid py-5 text-center">
-        <h1 class="display-5 fw-bold text-primary">Welcome to CareerBridge Placement Portal</h1>
+        <h1 class="display-5 fw-bold text-primary">Welcome to CareerBridge</h1>
         <p class="col-md-12 fs-4 text-muted">A dedicated platform for University students to find attachments and
             internships easily.</p>
         <hr class="my-4">
@@ -13,7 +13,7 @@
                     <h5 class="text-primary">For Students</h5>
                     <p class="text-muted">Browse available slots and apply for your industrial attachment.</p>
                     <a href="{% url 'login' %}" class="btn btn-primary w-100 py-2">
-                        Student Portal Login
+                        Sign up as Student
                     </a>
                 </div>
             </div>
@@ -21,9 +21,10 @@
             <div class="col-md-6">
                 <div class="h-100 p-4 bg-white border rounded shadow-sm">
                     <h5 class="text-success">For Organizations</h5>
-                    <p class="text-muted">Partner with SCI to post attachment slots and find qualified students.</p>
+                    <p class="text-muted">Partner with CareerBridge to post attachment slots and find qualified
+                        students.</p>
                     <a href="{% url 'register_employer' %}" class="btn btn-outline-success w-100 py-2">
-                        Employer Registration
+                        Sign up as employer
                     </a>
                 </div>
             </div>

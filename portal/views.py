@@ -11,6 +11,9 @@ from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.utils import timezone
 from django.contrib.auth import login, authenticate
+from .forms import ForgotCredentialsForm
+from django.urls import reverse
+from django.conf import settings
 
 from .forms import JobPostForm
 
@@ -77,6 +80,41 @@ def register_student(request):
     return render(request, "portal/register.html", {"form": form})
 
 
+# password recovery........
+def forgot_credentials(request):
+    if request.method == "POST":
+        form = ForgotCredentialsForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data["email"].strip().lower()
+            users = User.objects.filter(email__iexact=email)
+
+            if users.exists():
+                usernames = "\n".join(f"- {u.username}" for u in users)
+                reset_link = request.build_absolute_uri(reverse("password_reset"))
+                send_mail(
+                    subject="CareerBridge account recovery",
+                    message=(
+                        "We received your account recovery request.\n\n"
+                        f"Usernames linked to this email:\n{usernames}\n\n"
+                        f"To reset password, visit: {reset_link}\n"
+                    ),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[email],
+                    fail_silently=True,
+                )
+
+            messages.success(
+                request,
+                "If an account exists with that email, recovery details have been sent.",
+            )
+            return redirect("login")
+    else:
+        form = ForgotCredentialsForm()
+
+    return render(request, "portal/forgot_credentials.html", {"form": form})
+
+
+# students dashboard....
 @login_required
 def student_dashboard(request):
     try:
@@ -450,6 +488,26 @@ def application_detail(request, pk):
     application = get_object_or_404(Application, id=pk)
     return render(
         request, "student/application_detail.html", {"application": application}
+    )
+
+
+@login_required
+def review_application_documents(request, application_id):
+    employer = get_object_or_404(Employer, user=request.user)
+    application = get_object_or_404(
+        Application, id=application_id, job__employer=employer
+    )
+
+    documents = [
+        {"label": "Curriculum Vitae (CV)", "file": application.cv},
+        {"label": "Recommendation Letter", "file": application.recommendation_letter},
+        {"label": "Cover Letter", "file": application.cover_letter},
+    ]
+
+    return render(
+        request,
+        "portal/review_application_documents.html",
+        {"application": application, "documents": documents},
     )
 
 
