@@ -62,6 +62,8 @@ class JobSlot(models.Model):
     description = models.TextField()
     requirements = models.TextField(null=True, blank=True)
     location = models.CharField(max_length=100, default="Remote")
+    field_of_study = models.CharField(max_length=120, blank=True)
+    intake = models.CharField(max_length=50, blank=True)
 
     deadline = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)

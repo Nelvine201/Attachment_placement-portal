@@ -118,7 +118,16 @@ class EmployerRegistrationForm(forms.ModelForm):
 class JobPostForm(forms.ModelForm):
     class Meta:
         model = JobSlot
-        fields = ["title", "description", "requirements", "location", "deadline"]
+        # fields = ["title", "description", "requirements", "location", "deadline"]
+        fields = [
+            "title",
+            "description",
+            "requirements",
+            "location",
+            "field_of_study",
+            "intake",
+            "deadline",
+        ]
         widgets = {
             "title": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "e.g. Software Engineer"}
@@ -126,12 +135,48 @@ class JobPostForm(forms.ModelForm):
             "location": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "City or Remote"}
             ),
+            "field_of_study": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "e.g. Computer Science",
+                }
+            ),
+            "intake": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "e.g. May 2026 / Semester 2",
+                }
+            ),
             "deadline": forms.DateInput(
                 attrs={"type": "date", "class": "form-control"}
             ),
             "description": forms.Textarea(attrs={"rows": 4, "class": "form-control"}),
-            # Add classes to other fields for Bootstrap styling
         }
+        # widgets = {
+        #   "title": forms.TextInput(
+        #      attrs={"class": "form-control", "placeholder": "e.g. Software Engineer"}
+        # ),
+        # "location": forms.TextInput(
+        #   attrs={"class": "form-control", "placeholder": "City or Remote"}
+        #  "field_of_study": forms.TextInput(
+        # attrs={
+        #    "class": "form-control",
+        #   "placeholder": "e.g. Computer Science",
+        # }
+        # ),
+        # "intake": forms.TextInput(
+        #   attrs={
+        #      "class": "form-control",
+        #     "placeholder": "e.g. May 2026 / Semester 2",
+        # }
+        # ),
+        # ),
+        # "deadline": forms.DateInput(
+        #   attrs={"type": "date", "class": "form-control"}
+        # ),
+        # "description": forms.Textarea(attrs={"rows": 4, "class": "form-control"}),
+        # Add classes to other fields for Bootstrap styling
+        # }
 
 
 class ForgotCredentialsForm(forms.Form):

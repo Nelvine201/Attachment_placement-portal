@@ -56,9 +56,12 @@
                     Apply for this Opportunity
                 </a>
                 {% else %}
-                <a href="{% url 'register' %}" class="btn btn-primary w-100">
+                <!--<a href="{% url 'register' %}" class="btn btn-primary w-100">
                     Register as Student to Apply
-                </a>
+                </a>--->
+                <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#signupToApplyModal">
+                    Apply Now
+                </button>
                 {% endif %}
 
                 {% endif %}
@@ -67,6 +70,23 @@
 
     </div>
 
+</div>
+<div class="modal fade" id="signupToApplyModal" tabindex="-1" aria-labelledby="signupToApplyLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="signupToApplyLabel">Create account to continue</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Create an account to apply. It only takes 30 seconds!
+            </div>
+            <div class="modal-footer">
+                <a href="{% url 'login' %}" class="btn btn-outline-secondary">Log In</a>
+                <a href="{% url 'register' %}" class="btn btn-primary">Sign Up</a>
+            </div>
+        </div>
+    </div>
 </div>
 
 {% endblock %}

@@ -18,6 +18,29 @@ from django.conf import settings
 from .forms import JobPostForm
 
 
+def filter_slots(
+    slots, *, active_slots="all", location="", industry="", field_of_study="", intake=""
+):
+    """Filter placement slots with 5 user-driven parameters."""
+    today = timezone.now().date()
+
+    if active_slots == "active":
+        slots = slots.filter(deadline__gte=today)
+    elif active_slots == "closed":
+        slots = slots.filter(deadline__lt=today)
+
+    if location:
+        slots = slots.filter(location__icontains=location)
+    if industry:
+        slots = slots.filter(employer__industry__icontains=industry)
+    if field_of_study:
+        slots = slots.filter(field_of_study__icontains=field_of_study)
+    if intake:
+        slots = slots.filter(intake__icontains=intake)
+
+    return slots
+
+
 # Create your views here.
 def home(request):
     # This tells Django to look for home.html inside our templates folder
@@ -231,15 +254,29 @@ def employer_dashboard(request):
 def job_list(request):
     # jobs = JobSlot.objects.all()
     today = timezone.now().date()
-    status_filter = request.GET.get("status", "all")
+    # status_filter = request.GET.get("status", "all")
+    active_slots_filter = request.GET.get("status", "all")
+    location_filter = request.GET.get("location", "").strip()
+    industry_filter = request.GET.get("industry", "").strip()
+    field_of_study_filter = request.GET.get("field_of_study", "").strip()
+    intake_filter = request.GET.get("intake", "").strip()
 
-    jobs = JobSlot.objects.all().order_by("-created_at")
-    if status_filter == "active":
-        jobs = jobs.filter(deadline__gte=today)
-    elif status_filter == "closed":
-        jobs = jobs.filter(deadline__lt=today)
+    # jobs = JobSlot.objects.all().order_by("-created_at")
+    # if status_filter == "active":
+    #   jobs = jobs.filter(deadline__gte=today)
+    # elif status_filter == "closed":
+    #   jobs = jobs.filter(deadline__lt=today)
 
     # Default value
+    jobs = JobSlot.objects.select_related("employer").all().order_by("-created_at")
+    jobs = filter_slots(
+        jobs,
+        active_slots=active_slots_filter,
+        location=location_filter,
+        industry=industry_filter,
+        field_of_study=field_of_study_filter,
+        intake=intake_filter,
+    )
     applied_job_ids = []
 
     # If user is logged in, check applications
@@ -260,8 +297,28 @@ def job_list(request):
         {
             "jobs": jobs,
             "applied_job_ids": applied_job_ids,
-            "status_filter": status_filter,
+            "status_filter": active_slots_filter,
             "today": today,
+            "status_filter": active_slots_filter,
+            "today": today,
+            "location_filter": location_filter,
+            "industry_filter": industry_filter,
+            "field_of_study_filter": field_of_study_filter,
+            "intake_filter": intake_filter,
+            "location_options": JobSlot.objects.values_list(
+                "location", flat=True
+            ).distinct(),
+            "industry_options": Employer.objects.values_list(
+                "industry", flat=True
+            ).distinct(),
+            "field_of_study_options": JobSlot.objects.values_list(
+                "field_of_study", flat=True
+            )
+            .exclude(field_of_study="")
+            .distinct(),
+            "intake_options": JobSlot.objects.values_list("intake", flat=True)
+            .exclude(intake="")
+            .distinct(),
         },
     )
 
