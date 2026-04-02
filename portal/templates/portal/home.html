@@ -71,14 +71,14 @@
     }
 
     .hero-main {
-        grid-column: span 8;
-        padding: 40px;
-        background: linear-gradient(125deg, #2f63ff, #16b7ff);
+        grid-column: span 12;
+        padding: 44px;
+        background: linear-gradient(135deg, #1E3A8A 0%, #0F766E 100%);
         color: #fff;
     }
 
     .hero-side {
-        grid-column: span 4;
+        grid-column: span 12;
         padding: 24px;
     }
 
@@ -95,6 +95,61 @@
 
     .section-title {
         margin-bottom: 16px;
+    }
+
+    .hero-searchbar {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(150px, 1fr)) 160px;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.15);
+        padding: 12px;
+        border-radius: 14px;
+        backdrop-filter: blur(4px);
+        margin-top: 24px;
+    }
+
+    .hero-searchbar select,
+    .hero-searchbar button {
+        height: 48px;
+        border-radius: 10px;
+        border: none;
+        font-size: 0.95rem;
+    }
+
+    .hero-searchbar select {
+        padding: 0 10px;
+        color: #0f172a;
+        background: #fff;
+    }
+
+    .hero-searchbar button {
+        background: #2563EB;
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .hero-searchbar button:hover {
+        background-color: #1D4ED8;
+    }
+
+    .popular-searches {
+        margin-top: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .popular-chip {
+        text-decoration: none;
+        color: #0f172a;
+        background: #fff;
+        border-radius: 999px;
+        padding: 7px 12px;
+        font-size: 0.84rem;
+        font-weight: 600;
     }
 
     .trending-track {
@@ -126,6 +181,20 @@
     .job-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 16px 30px rgba(47, 99, 255, 0.2);
+        background: rgba(47, 99, 255, 0.08);
+    }
+
+    .stat-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        border-radius: 12px;
+        padding: 8px;
+        transition: background-color 0.2s ease;
+    }
+
+    .stat-link:hover {
+        background-color: rgba(47, 99, 255, 0.08);
     }
 
     .quick-tags {
@@ -162,30 +231,98 @@
         .tip-widget {
             grid-column: span 12;
         }
+
+        .hero-searchbar {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .hero-searchbar button {
+            grid-column: span 2;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .hero-searchbar {
+            grid-template-columns: 1fr;
+        }
+
+        .hero-searchbar button {
+            grid-column: span 1;
+        }
     }
 </style>
 
 <section class="home-grid">
     <div class="hero-main glass-card fade-up">
-        <p class="text-uppercase mb-2 fw-semibold">CareerBridge • 2026</p>
-        <h1 class="display-6 fw-bold">Find your next attachment in minutes.</h1>
-        <p class="mb-4">Discover open slots, compare opportunities fast, and unlock your application journey once you
-            create your student account.</p>
-        <a href="#jobs-feed" class="btn btn-light fw-semibold px-4 py-2">Browse Opportunities</a>
+        <p class="text-uppercase mb-2 fw-semibold">CareerBridge • Explore and discover</p>
+        <h1 class="display-5 fw-bold">Explore and discover your ideal placement opportunity.</h1>
+        <p class="mb-0">Filter active opportunities by location, industry, field of study, and intake period.</p>
+        <form class="hero-searchbar" method="get" action="{% url 'jobs' %}">
+            <select name="active_slots" aria-label="Active Slots">
+                <option value="">Active Slots</option>
+                <option value="1-5">1-5 Openings</option>
+                <option value="6-10">6-10 Openings</option>
+                <option value="10+">10+ Openings</option>
+            </select>
+            <select name="location" aria-label="Location">
+                <option value="">Location</option>
+                <option value="Nairobi">Nairobi</option>
+                <option value="Kisumu">Kisumu</option>
+                <option value="Mombasa">Mombasa</option>
+                <option value="Remote">Remote</option>
+            </select>
+            <select name="industry" aria-label="Industries">
+                <option value="">Industries</option>
+                <option value="Technology">Technology</option>
+                <option value="Finance">Finance</option>
+                <option value="Healthcare">Healthcare</option>
+                <option value="Telecommunications">Telecommunications</option>
+            </select>
+            <select name="field_of_study" aria-label="Field of Study">
+                <option value="">Field of Study</option>
+                <option value="Computer Science">Computer Science</option>
+                <option value="Business">Business</option>
+                <option value="Engineering">Engineering</option>
+                <option value="Statistics">Statistics</option>
+            </select>
+            <select name="intake" aria-label="Intakes">
+                <option value="">Intakes</option>
+                <option value="May-July">May-July</option>
+                <option value="Sept-Dec">Sept-Dec</option>
+                <option value="Jan-April">Jan-April</option>
+            </select>
+            <button type="submit">Search Slots</button>
+        </form>
+        <!----- <div class="popular-searches">
+            <span class="fw-semibold text-white-50">Popular Searches:</span>
+            <a class="popular-chip" href="{% url 'jobs' %}?location=Remote">Remote CS Internships</a>
+            <a class="popular-chip" href="{% url 'jobs' %}?industry=Technology">Tech May-July Intake</a>
+            <a class="popular-chip" href="{% url 'jobs' %}?location=Nairobi&industry=Finance">Nairobi Finance
+                Attachments</a>
+        </div>
     </div>
 
     <div class="hero-side glass-card fade-up">
         <h5 class="fw-bold mb-3">Quick Stats</h5>
         <div class="stats-list">
-            <div>
-                <p class="text-muted mb-1 small">Active Slots</p>
-                <h3 class="fw-bold">{{ active_slots }}</h3>
-            </div>
-            <div>
+            <a href="{% url 'jobs' %}?status=active" class="stat-link"></a>
+            <p class="text-muted mb-1 small">Active Slots</p>
+            <h3 class="fw-bold">{{ active_slots }}</h3>
+            </a>
+            <a href="{% url 'jobs' %}?status=closed" class="stat-link">
+                <p class="text-muted mb-1 small">Closed Slots</p>
+                <h3 class="fw-bold">{{ closed_slots }}</h3>
+            </a>
+            <a href="{% url 'jobs' %}?status=all" class="stat-link">
+                <p class="text-muted mb-1 small">Posted Slots</p>
+                <h3 class="fw-bold">{{ jobs|length }}</h3>
+            </a>
+            <div class="p-2">
+
                 <p class="text-muted mb-1 small">Companies Hiring</p>
                 <h3 class="fw-bold">{{ companies_hiring }}</h3>
             </div>
-            <div>
+            <!---- <div>
                 <p class="text-muted mb-1 small">Trending Now</p>
                 <h3 class="fw-bold">{{ trending_jobs|length }}</h3>
             </div>
@@ -193,15 +330,15 @@
                 <p class="text-muted mb-1 small">Open to Public</p>
                 <h3 class="fw-bold">100%</h3>
             </div>
-        </div>
+    </div>
     </div>
 
-    <!--<div class="tip-widget glass-card fade-up">
+    <div class="tip-widget glass-card fade-up">
         <h6 class="fw-bold mb-2">Career Readiness Widget</h6>
         <p class="mb-1"><strong>Resume Tip of the Day:</strong> Start each bullet point with a measurable action verb
             and include one outcome metric.</p>
         <small class="text-muted">Example: “Improved data entry speed by 28% through spreadsheet automation.”</small>
-    </div>--->
+    </div>
 </section>
 
 <!--<section class="mb-4 fade-up">
@@ -228,7 +365,7 @@
     </div>
 </section>--->
 
-<section id="jobs-feed" class="fade-up">
+        <!---<section id="jobs-feed" class="fade-up">
     <div class="d-flex justify-content-between align-items-center section-title">
         <h4 class="mb-0">All Posted Job Slots</h4>
         <span class="badge text-bg-primary">{{ jobs|length }} available</span>
@@ -239,6 +376,7 @@
         <div class="job-card glass-card" data-bs-toggle="modal" data-bs-target="#jobQuickViewModal"
             data-title="{{ job.title }}" data-company="{{ job.employer.company_name }}"
             data-location="{{ job.location }}" data-deadline="{{ job.deadline|date:'M d, Y' }}"
+            data-is-closed="{% if job.deadline < today %}true{% else %}false{% endif %}"
             data-description="{{ job.description|striptags }}"
             data-requirements="{{ job.requirements|default:'Not specified'|striptags }}"
             data-link="{% url 'job_detail' job.id %}" data-apply-link="{% url 'apply_for_job' job.id %}">
@@ -256,7 +394,7 @@
             <small class="text-muted d-block">{{ job.description|truncatechars:90 }}</small>
             <div class="quick-tags">
                 <span class="quick-tag">{{ job.location }}</span>
-                <!--<span class="quick-tag">Final Year Friendly</span>--->
+                <span class="quick-tag">Final Year Friendly</span>
                 <span class="quick-tag">Deadline {{ job.deadline|date:"M d" }}</span>
             </div>
         </div>
@@ -267,9 +405,9 @@
         </div>
         {% endfor %}
     </div>
-</section>
+</section>--->
 
-<div class="modal fade" id="jobQuickViewModal" tabindex="-1" aria-hidden="true">
+        <!--<div class="modal fade" id="jobQuickViewModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 glass-card">
             <div class="modal-header border-0">
@@ -285,43 +423,64 @@
                 <h6 class="fw-bold mt-3">Requirements</h6>
                 <p id="quickViewRequirements" class="text-muted"></p>
             </div>
-            <div class="modal-footer border-0">
-                <a id="quickViewDetailsLink" href="#" class="btn btn-outline-secondary">Full Details</a>
-                {% if user.is_authenticated %}
-                <a id="quickViewApplyLink" href="#" class="btn btn-primary">Apply Now</a>
-                {% else %}
-                <a href="{% url 'register' %}" class="btn btn-primary">Apply Now</a>
-                {% endif %}
-            </div>
-        </div>
+        <div class="modal-footer border-0">
+            <a id="quickViewDetailsLink" href="#" class="btn btn-outline-secondary">Full Details</a>
+            {% if user.is_authenticated %}
+            <a id="quickViewApplyLink" href="#" class="btn btn-primary">Apply Now</a>
+            <span id="quickViewDeadlineNotice" class="text-danger fw-semibold d-none">Deadline has passed!!
+                😢</span>
+            {% else %}
+            <a href="{% url 'register' %}" class="btn btn-primary">Apply Now</a>
+            {% endif %}
+        </div>--->
     </div>
-</div>
-<script>
-    const quickViewModal = document.getElementById('jobQuickViewModal');
-    if (quickViewModal) {
-        quickViewModal.addEventListener('show.bs.modal', function (event) {
-            const trigger = event.relatedTarget;
-            document.getElementById('quickViewTitle').textContent = trigger.dataset.title;
-            document.getElementById('quickViewCompany').textContent = trigger.dataset.company;
-            document.getElementById('quickViewLocation').textContent = trigger.dataset.location;
-            document.getElementById('quickViewDeadline').textContent = trigger.dataset.deadline;
-            document.getElementById('quickViewDescription').textContent = trigger.dataset.description;
-            document.getElementById('quickViewRequirements').textContent = trigger.dataset.requirements;
-            document.getElementById('quickViewDetailsLink').href = trigger.dataset.link;
-            const applyLink = document.getElementById('quickViewApplyLink');
-            if (applyLink) applyLink.href = trigger.dataset.applyLink;
-        });
-    }
+    </div>
+    </div>
+    <script>
+        const quickViewModal = document.getElementById('jobQuickViewModal');
+        if (quickViewModal) {
+            quickViewModal.addEventListener('show.bs.modal', function (event) {
+                const trigger = event.relatedTarget;
+                document.getElementById('quickViewTitle').textContent = trigger.dataset.title;
+                document.getElementById('quickViewCompany').textContent = trigger.dataset.company;
+                document.getElementById('quickViewLocation').textContent = trigger.dataset.location;
+                document.getElementById('quickViewDeadline').textContent = trigger.dataset.deadline;
+                document.getElementById('quickViewDescription').textContent = trigger.dataset.description;
+                document.getElementById('quickViewRequirements').textContent = trigger.dataset.requirements;
+                document.getElementById('quickViewDetailsLink').href = trigger.dataset.link;
+                const applyLink = document.getElementById('quickViewApplyLink');
+                const deadlineNotice = document.getElementById('quickViewDeadlineNotice');
+                if (applyLink) {
+                    const isClosed = trigger.dataset.isClosed === 'true';
+                    applyLink.href = trigger.dataset.applyLink;
+                    if (isClosed) {
+                        applyLink.classList.remove('btn-primary');
+                        applyLink.classList.add('btn-danger', 'disabled');
+                        applyLink.setAttribute('aria-disabled', 'true');
+                        applyLink.textContent = 'Deadline has passed!! 😢';
+                        applyLink.removeAttribute('href');
+                        if (deadlineNotice) deadlineNotice.classList.remove('d-none');
+                    } else {
+                        applyLink.classList.remove('btn-danger', 'disabled');
+                        applyLink.classList.add('btn-primary');
+                        applyLink.removeAttribute('aria-disabled');
+                        applyLink.textContent = 'Apply Now';
+                        applyLink.href = trigger.dataset.applyLink;
+                        if (deadlineNotice) deadlineNotice.classList.add('d-none');
+                    }
+                }
+            });
+        }
 
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-            }
-        });
-    }, { threshold: 0.12 });
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.12 });
 
-    document.querySelectorAll('.fade-up').forEach((el) => observer.observe(el));
-</script>
-{% endfor %}
-{% endblock %}
+        document.querySelectorAll('.fade-up').forEach((el) => observer.observe(el));
+    </script>
+    {% endfor %}
+    {% endblock %}

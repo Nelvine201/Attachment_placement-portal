@@ -23,9 +23,13 @@ def home(request):
     # This tells Django to look for home.html inside our templates folder
     # return render(request, "home.html")
     jobs = JobSlot.objects.select_related("employer").all().order_by("-created_at")
-    active_slots = jobs.filter(deadline__gte=timezone.now().date()).count()
+    # active_slots = jobs.filter(deadline__gte=timezone.now().date()).count()
+    today = timezone.now().date()
+    active_slots = jobs.filter(deadline__gte=today).count()
+    closed_slots = jobs.filter(deadline__lt=today).count()
     companies_hiring = (
-        jobs.filter(deadline__gte=timezone.now().date())
+        # jobs.filter(deadline__gte=timezone.now().date())
+        jobs.filter(deadline__gte=today)
         .values("employer_id")
         .distinct()
         .count()
@@ -39,7 +43,9 @@ def home(request):
             "jobs": jobs,
             "trending_jobs": trending_jobs,
             "active_slots": active_slots,
+            "closed_slots": closed_slots,
             "companies_hiring": companies_hiring,
+            "today": today,
         },
     )
 
