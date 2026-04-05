@@ -99,7 +99,7 @@
 
     .hero-searchbar {
         display: grid;
-        grid-template-columns: repeat(5, minmax(150px, 1fr)) 160px;
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
         gap: 10px;
         background: rgba(255, 255, 255, 0.15);
         padding: 12px;
@@ -108,29 +108,21 @@
         margin-top: 24px;
     }
 
-    .hero-searchbar select,
-    .hero-searchbar button {
-        height: 48px;
+    .hero-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
         border-radius: 10px;
-        border: none;
+        text-decoration: none;
         font-size: 0.95rem;
-    }
-
-    .hero-searchbar select {
-        padding: 0 10px;
-        color: #0f172a;
-        background: #fff;
-    }
-
-    .hero-searchbar button {
-        background: #2563EB;
-        color: #fff;
         font-weight: 700;
-        cursor: pointer;
         transition: background-color 0.2s ease;
+        color: #fff;
+        background: #2563EB;
     }
 
-    .hero-searchbar button:hover {
+    .hero-link:hover {
         background-color: #1D4ED8;
     }
 
@@ -236,18 +228,12 @@
             grid-template-columns: 1fr 1fr;
         }
 
-        .hero-searchbar button {
-            grid-column: span 2;
-        }
+
     }
 
     @media (max-width: 640px) {
         .hero-searchbar {
             grid-template-columns: 1fr;
-        }
-
-        .hero-searchbar button {
-            grid-column: span 1;
         }
     }
 </style>
@@ -256,43 +242,11 @@
     <div class="hero-main glass-card fade-up">
         <p class="text-uppercase mb-2 fw-semibold">CareerBridge • Explore and discover</p>
         <h1 class="display-5 fw-bold">Explore and discover your ideal placement opportunity.</h1>
-        <p class="mb-0">Filter active opportunities by location, industry, field of study, and intake period.</p>
-        <form class="hero-searchbar" method="get" action="{% url 'jobs' %}">
-            <select name="active_slots" aria-label="Active Slots">
-                <option value="">Active Slots</option>
-                <option value="1-5">1-5 Openings</option>
-                <option value="6-10">6-10 Openings</option>
-                <option value="10+">10+ Openings</option>
-            </select>
-            <select name="location" aria-label="Location">
-                <option value="">Location</option>
-                <option value="Nairobi">Nairobi</option>
-                <option value="Kisumu">Kisumu</option>
-                <option value="Mombasa">Mombasa</option>
-                <option value="Remote">Remote</option>
-            </select>
-            <select name="industry" aria-label="Industries">
-                <option value="">Industries</option>
-                <option value="Technology">Technology</option>
-                <option value="Finance">Finance</option>
-                <option value="Healthcare">Healthcare</option>
-                <option value="Telecommunications">Telecommunications</option>
-            </select>
-            <select name="field_of_study" aria-label="Field of Study">
-                <option value="">Field of Study</option>
-                <option value="Computer Science">Computer Science</option>
-                <option value="Business">Business</option>
-                <option value="Engineering">Engineering</option>
-                <option value="Statistics">Statistics</option>
-            </select>
-            <select name="intake" aria-label="Intakes">
-                <option value="">Intakes</option>
-                <option value="May-July">May-July</option>
-                <option value="Sept-Dec">Sept-Dec</option>
-                <option value="Jan-April">Jan-April</option>
-            </select>
-            <button type="submit">Search Slots</button>
-        </form>
+        <p class="mb-0">Quickly jump to all posted slots or view only currently active opportunities.</p>
+        <div class="hero-searchbar">
+            <a href="{% url 'jobs' %}?status=all" class="hero-link">All Posted Slots</a>
+            <a href="{% url 'jobs' %}?status=active" class="hero-link">Active Slots Only</a>
+        </div>
         <!----- <div class="popular-searches">
             <span class="fw-semibold text-white-50">Popular Searches:</span>
             <a class="popular-chip" href="{% url 'jobs' %}?location=Remote">Remote CS Internships</a>

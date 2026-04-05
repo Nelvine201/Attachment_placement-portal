@@ -58,6 +58,24 @@ def home(request):
         .count()
     )
     trending_jobs = jobs[:8]
+    location_options = (
+        JobSlot.objects.values_list("location", flat=True)
+        .exclude(location="")
+        .distinct()
+    )
+    industry_options = (
+        Employer.objects.values_list("industry", flat=True)
+        .exclude(industry="")
+        .distinct()
+    )
+    field_of_study_options = (
+        JobSlot.objects.values_list("field_of_study", flat=True)
+        .exclude(field_of_study="")
+        .distinct()
+    )
+    intake_options = (
+        JobSlot.objects.values_list("intake", flat=True).exclude(intake="").distinct()
+    )
 
     return render(
         request,
@@ -69,6 +87,10 @@ def home(request):
             "closed_slots": closed_slots,
             "companies_hiring": companies_hiring,
             "today": today,
+            "location_options": location_options,
+            "industry_options": industry_options,
+            "field_of_study_options": field_of_study_options,
+            "intake_options": intake_options,
         },
     )
 
@@ -250,7 +272,7 @@ def employer_dashboard(request):
     return render(request, "portal/employer_dashboard.html", context)
 
 
-@login_required
+# @login_required
 def job_list(request):
     # jobs = JobSlot.objects.all()
     today = timezone.now().date()
@@ -297,8 +319,6 @@ def job_list(request):
         {
             "jobs": jobs,
             "applied_job_ids": applied_job_ids,
-            "status_filter": active_slots_filter,
-            "today": today,
             "status_filter": active_slots_filter,
             "today": today,
             "location_filter": location_filter,
