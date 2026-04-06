@@ -1,59 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!--<div class="p-5 mb-4 bg-light rounded-3 shadow-sm border">
-    <div class="container-fluid py-5 text-center">
-        <h1 class="display-5 fw-bold text-primary">Welcome to CareerBridge</h1>
-        <p class="col-md-12 fs-4 text-muted">A dedicated platform for University students to find attachments and
-            internships easily.</p>
-        <hr class="my-4">
-        <div class="row g-4 mt-2">
-            <div class="col-md-6">
-                <div class="h-100 p-4 bg-white border rounded shadow-sm">
-                    <h5 class="text-primary">For Students</h5>
-                    <p class="text-muted">Browse available slots and apply for your industrial attachment.</p>
-                    <a href="{% url 'login' %}" class="btn btn-primary w-100 py-2">
-                        Sign up as Student
-                    </a>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="h-100 p-4 bg-white border rounded shadow-sm">
-                    <h5 class="text-success">For Organizations</h5>
-                    <p class="text-muted">Partner with CareerBridge to post attachment slots and find qualified
-                        students.</p>
-                    <a href="{% url 'register_employer' %}" class="btn btn-outline-success w-100 py-2">
-                        Sign up as employer--->
-<!---<p class="text-muted mb-4">
-        Tap any opportunity to view details. You can create a student account when you are ready to apply.
-    </p>
 
-    <div class="row">
-        {% for job in jobs %}
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5>
-                        <a href="{% url 'job_detail' job.id %}" class="text-primary text-decoration-none">
-                            {{ job.title }}
-                        </a>
-                    </h5>
-                    <h6 class="card-subtitle mb-2 text-muted">{{ job.employer.company_name }}</h6>
-                    <p class="card-text text-truncate">{{ job.description }}</p>
-
-                    <ul class="list-unstyled small">
-                        <li><strong>Location:</strong> {{ job.location }}</li>
-                        <li><strong>Deadline:</strong> {{ job.deadline|date:"M d, Y" }}</li>
-                    </ul>
-                </div>
-                <div class="card-footer bg-transparent border-top-0 pb-3">
-                    <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-primary w-100">
-                        View Details
-                    </a>
-                </div>
-            </div>
-
-        </div>--->
 <style>
     .home-grid {
         display: grid;
@@ -77,25 +25,7 @@
         color: #fff;
     }
 
-    .hero-side {
-        grid-column: span 12;
-        padding: 24px;
-    }
 
-    .stats-list {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-    }
-
-    .tip-widget {
-        grid-column: span 4;
-        padding: 24px;
-    }
-
-    .section-title {
-        margin-bottom: 16px;
-    }
 
     .hero-searchbar {
         display: grid;
@@ -126,84 +56,6 @@
         background-color: #1D4ED8;
     }
 
-    .popular-searches {
-        margin-top: 16px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    .popular-chip {
-        text-decoration: none;
-        color: #0f172a;
-        background: #fff;
-        border-radius: 999px;
-        padding: 7px 12px;
-        font-size: 0.84rem;
-        font-weight: 600;
-    }
-
-    .trending-track {
-        display: flex;
-        gap: 16px;
-        overflow-x: auto;
-        padding-bottom: 8px;
-        scroll-snap-type: x mandatory;
-    }
-
-    .trending-item {
-        min-width: 280px;
-        scroll-snap-align: start;
-        padding: 20px;
-    }
-
-    .job-feed {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 16px;
-    }
-
-    .job-card {
-        padding: 20px;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        cursor: pointer;
-    }
-
-    .job-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 16px 30px rgba(47, 99, 255, 0.2);
-        background: rgba(47, 99, 255, 0.08);
-    }
-
-    .stat-link {
-        display: block;
-        text-decoration: none;
-        color: inherit;
-        border-radius: 12px;
-        padding: 8px;
-        transition: background-color 0.2s ease;
-    }
-
-    .stat-link:hover {
-        background-color: rgba(47, 99, 255, 0.08);
-    }
-
-    .quick-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 12px;
-    }
-
-    .quick-tag {
-        font-size: 0.75rem;
-        border-radius: 999px;
-        padding: 4px 10px;
-        background: rgba(47, 99, 255, 0.12);
-        color: #2444b8;
-        border: 1px solid rgba(47, 99, 255, 0.25);
-    }
 
     .fade-up {
         opacity: 0;
@@ -217,18 +69,9 @@
     }
 
     @media (max-width: 991px) {
-
-        .hero-main,
-        .hero-side,
-        .tip-widget {
-            grid-column: span 12;
-        }
-
         .hero-searchbar {
             grid-template-columns: 1fr 1fr;
         }
-
-
     }
 
     @media (max-width: 640px) {
@@ -247,194 +90,18 @@
             <a href="{% url 'jobs' %}?status=all" class="hero-link">All Posted Slots</a>
             <a href="{% url 'jobs' %}?status=active" class="hero-link">Active Slots Only</a>
         </div>
-        <!----- <div class="popular-searches">
-            <span class="fw-semibold text-white-50">Popular Searches:</span>
-            <a class="popular-chip" href="{% url 'jobs' %}?location=Remote">Remote CS Internships</a>
-            <a class="popular-chip" href="{% url 'jobs' %}?industry=Technology">Tech May-July Intake</a>
-            <a class="popular-chip" href="{% url 'jobs' %}?location=Nairobi&industry=Finance">Nairobi Finance
-                Attachments</a>
-        </div>
-    </div>
 
-    <div class="hero-side glass-card fade-up">
-        <h5 class="fw-bold mb-3">Quick Stats</h5>
-        <div class="stats-list">
-            <a href="{% url 'jobs' %}?status=active" class="stat-link"></a>
-            <p class="text-muted mb-1 small">Active Slots</p>
-            <h3 class="fw-bold">{{ active_slots }}</h3>
-            </a>
-            <a href="{% url 'jobs' %}?status=closed" class="stat-link">
-                <p class="text-muted mb-1 small">Closed Slots</p>
-                <h3 class="fw-bold">{{ closed_slots }}</h3>
-            </a>
-            <a href="{% url 'jobs' %}?status=all" class="stat-link">
-                <p class="text-muted mb-1 small">Posted Slots</p>
-                <h3 class="fw-bold">{{ jobs|length }}</h3>
-            </a>
-            <div class="p-2">
-
-                <p class="text-muted mb-1 small">Companies Hiring</p>
-                <h3 class="fw-bold">{{ companies_hiring }}</h3>
-            </div>
-            <!---- <div>
-                <p class="text-muted mb-1 small">Trending Now</p>
-                <h3 class="fw-bold">{{ trending_jobs|length }}</h3>
-            </div>
-            <div>
-                <p class="text-muted mb-1 small">Open to Public</p>
-                <h3 class="fw-bold">100%</h3>
-            </div>
-    </div>
-    </div>
-
-    <div class="tip-widget glass-card fade-up">
-        <h6 class="fw-bold mb-2">Career Readiness Widget</h6>
-        <p class="mb-1"><strong>Resume Tip of the Day:</strong> Start each bullet point with a measurable action verb
-            and include one outcome metric.</p>
-        <small class="text-muted">Example: “Improved data entry speed by 28% through spreadsheet automation.”</small>
     </div>
 </section>
+<script>
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.12 });
 
-<!--<section class="mb-4 fade-up">
-    <div class="d-flex justify-content-between align-items-center section-title">
-        <h4 class="mb-0">Trending Opportunities</h4>
-        <small class="text-muted">Swipe horizontally</small>
-    </div>
-    <div class="trending-track">
-        {% for job in trending_jobs %}
-        <div class="trending-item glass-card">
-            <small class="text-muted d-block mb-2">{{ job.employer.company_name }}</small>
-            <h6 class="fw-bold mb-2">{{ job.title }}</h6>
-            <div class="quick-tags">
-                <span class="quick-tag">{{ job.location }}</span>
-                <span class="quick-tag">Deadline: {{ job.deadline|date:"M d" }}</span>
-            </div>
-        </div>
-        {% empty %}
-        <div class="trending-item glass-card">
-            <h6 class="fw-bold mb-2">No trending slots yet</h6>
-            <p class="text-muted mb-0">As soon as new jobs are posted, they will appear here.</p>
-        </div>
-        {% endfor %}
-    </div>
-</section>--->
-
-        <!---<section id="jobs-feed" class="fade-up">
-    <div class="d-flex justify-content-between align-items-center section-title">
-        <h4 class="mb-0">All Posted Job Slots</h4>
-        <span class="badge text-bg-primary">{{ jobs|length }} available</span>
-    </div>
-
-    <div class="job-feed">
-        {% for job in jobs %}
-        <div class="job-card glass-card" data-bs-toggle="modal" data-bs-target="#jobQuickViewModal"
-            data-title="{{ job.title }}" data-company="{{ job.employer.company_name }}"
-            data-location="{{ job.location }}" data-deadline="{{ job.deadline|date:'M d, Y' }}"
-            data-is-closed="{% if job.deadline < today %}true{% else %}false{% endif %}"
-            data-description="{{ job.description|striptags }}"
-            data-requirements="{{ job.requirements|default:'Not specified'|striptags }}"
-            data-link="{% url 'job_detail' job.id %}" data-apply-link="{% url 'apply_for_job' job.id %}">
-            <div class="d-flex align-items-center mb-2">
-                {% if job.employer.logo %}
-                <img src="{{ job.employer.logo.url }}" alt="{{ job.employer.company_name }}" class="rounded-circle me-2"
-                    width="34" height="34">
-                {% else %}
-                <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-2"
-                    style="width:34px;height:34px;">{{ job.employer.company_name|slice:":1" }}</div>
-                {% endif %}
-                <small class="text-muted">{{ job.employer.company_name }}</small>
-            </div>
-            <h6 class="fw-bold mb-1">{{ job.title }}</h6>
-            <small class="text-muted d-block">{{ job.description|truncatechars:90 }}</small>
-            <div class="quick-tags">
-                <span class="quick-tag">{{ job.location }}</span>
-                <span class="quick-tag">Final Year Friendly</span>
-                <span class="quick-tag">Deadline {{ job.deadline|date:"M d" }}</span>
-            </div>
-        </div>
-        {% empty %}
-        <div class="glass-card p-4">
-            <h5 class="mb-2">No opportunities yet</h5>
-            <p class="text-muted mb-0">The feed will auto-populate as soon as employers post attachment slots.</p>
-        </div>
-        {% endfor %}
-    </div>
-</section>--->
-
-        <!--<div class="modal fade" id="jobQuickViewModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 glass-card">
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold" id="quickViewTitle">Opportunity</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p class="mb-2"><strong>Company:</strong> <span id="quickViewCompany"></span></p>
-                <p class="mb-2"><strong>Location:</strong> <span id="quickViewLocation"></span></p>
-                <p class="mb-3"><strong>Deadline:</strong> <span id="quickViewDeadline"></span></p>
-                <h6 class="fw-bold">Description</h6>
-                <p id="quickViewDescription" class="text-muted"></p>
-                <h6 class="fw-bold mt-3">Requirements</h6>
-                <p id="quickViewRequirements" class="text-muted"></p>
-            </div>
-        <div class="modal-footer border-0">
-            <a id="quickViewDetailsLink" href="#" class="btn btn-outline-secondary">Full Details</a>
-            {% if user.is_authenticated %}
-            <a id="quickViewApplyLink" href="#" class="btn btn-primary">Apply Now</a>
-            <span id="quickViewDeadlineNotice" class="text-danger fw-semibold d-none">Deadline has passed!!
-                😢</span>
-            {% else %}
-            <a href="{% url 'register' %}" class="btn btn-primary">Apply Now</a>
-            {% endif %}
-        </div>--->
-    </div>
-    </div>
-    </div>
-    <script>
-        const quickViewModal = document.getElementById('jobQuickViewModal');
-        if (quickViewModal) {
-            quickViewModal.addEventListener('show.bs.modal', function (event) {
-                const trigger = event.relatedTarget;
-                document.getElementById('quickViewTitle').textContent = trigger.dataset.title;
-                document.getElementById('quickViewCompany').textContent = trigger.dataset.company;
-                document.getElementById('quickViewLocation').textContent = trigger.dataset.location;
-                document.getElementById('quickViewDeadline').textContent = trigger.dataset.deadline;
-                document.getElementById('quickViewDescription').textContent = trigger.dataset.description;
-                document.getElementById('quickViewRequirements').textContent = trigger.dataset.requirements;
-                document.getElementById('quickViewDetailsLink').href = trigger.dataset.link;
-                const applyLink = document.getElementById('quickViewApplyLink');
-                const deadlineNotice = document.getElementById('quickViewDeadlineNotice');
-                if (applyLink) {
-                    const isClosed = trigger.dataset.isClosed === 'true';
-                    applyLink.href = trigger.dataset.applyLink;
-                    if (isClosed) {
-                        applyLink.classList.remove('btn-primary');
-                        applyLink.classList.add('btn-danger', 'disabled');
-                        applyLink.setAttribute('aria-disabled', 'true');
-                        applyLink.textContent = 'Deadline has passed!! 😢';
-                        applyLink.removeAttribute('href');
-                        if (deadlineNotice) deadlineNotice.classList.remove('d-none');
-                    } else {
-                        applyLink.classList.remove('btn-danger', 'disabled');
-                        applyLink.classList.add('btn-primary');
-                        applyLink.removeAttribute('aria-disabled');
-                        applyLink.textContent = 'Apply Now';
-                        applyLink.href = trigger.dataset.applyLink;
-                        if (deadlineNotice) deadlineNotice.classList.add('d-none');
-                    }
-                }
-            });
-        }
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, { threshold: 0.12 });
-
-        document.querySelectorAll('.fade-up').forEach((el) => observer.observe(el));
-    </script>
-    {% endfor %}
-    {% endblock %}
+    document.querySelectorAll('.fade-up').forEach((el) => observer.observe(el));
+</script>
+{% endblock %}

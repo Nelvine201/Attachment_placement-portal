@@ -355,12 +355,22 @@ def apply_for_job(request, job_id):
         messages.error(request, "Application deadline has passed.")
         return redirect("jobs")
 
-    already_applied = Application.objects.filter(student=student, job=job).exists()
+    # already_applied = Application.objects.filter(student=student, job=job).exists()
+    existing_application = Application.objects.filter(student=student, job=job).first()
 
-    if already_applied:
+    # if already_applied:
+    if existing_application:
+        applied_on = timezone.localtime(existing_application.applied_on).strftime(
+            "%d %b %Y"
+        )
         messages.warning(
             request,
-            f"You have already applied for the {job.title} position at {job.employer.company_name}.",
+            # f"You have already applied for the {job.title} position at {job.employer.company_name}.",  )
+            (
+                f"You have already applied for this slot. "
+                f"Your application was received on {applied_on}. "
+                "Please wait for feedback."
+            ),
         )
         return redirect("student_dashboard")
 

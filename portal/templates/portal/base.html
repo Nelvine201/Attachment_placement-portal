@@ -76,11 +76,42 @@
                 <ul class="navbar-nav ms-auto">
                     <a class="nav-link" href="{% url 'home' %}">Home</a>
                     <a class="nav-link" href="{% url 'about' %}">About</a>
+                    <a class="nav-link" href="{% url 'login' %}">Student Login</a>
+                    <a class="nav-link employer-portal-btn" href="{% url 'register_employer' %}">Employer Portal</a>
 
-                    <!--<a class="nav-link" href="{% url 'register' %}">Sign up</a>--->
+
+                    <!--   <a class="nav-link" href="{% url 'register' %}">Sign up</a>--->
                     <!--<a class="nav-link" href="{% url 'jobs' %}">Available opportunities</a>
-                    <a class="nav-link" href="{% url 'login' %}">Student Sign In</a>--->
+                    <a class="nav-link" href="{% url 'login' %}">Student Sign In</a>
                     <a class="nav-link" href="{% url 'register_employer' %}">Employer Portal</a>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'about' %}">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'jobs' %}">Opportunities</a>
+                    </li>
+
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <form action="{% url 'logout' %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button class="nav-link border-0 bg-transparent p-0">Logout</button>
+                        </form>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Student Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link employer-portal-btn" href="{% url 'register_employer' %}">Employer Portal</a>
+                    </li>
+                    {% endif %}--->
                 </ul>
             </div>
         </div>

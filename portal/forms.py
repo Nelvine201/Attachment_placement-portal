@@ -38,11 +38,17 @@ class StudentRegistrationForm(forms.ModelForm):
 class StudentProfileForm(forms.ModelForm):
     class Meta:
         model = Student
-        fields = ["full_name", "course", "email"]
+        fields = ["full_name", "course", "year_of_study", "institution", "email"]
 
         widgets = {
             "full_name": forms.TextInput(attrs={"class": "form-control"}),
             "course": forms.TextInput(attrs={"class": "form-control"}),
+            "year_of_study": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "e.g. Year 3"}
+            ),
+            "institution": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "e.g. Maseno University"}
+            ),
             "email": forms.EmailInput(attrs={"class": "form-control"}),
         }
 

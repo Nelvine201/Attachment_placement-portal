@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.conf import settings
 from django.core.mail import send_mail
 from django.http import HttpResponse
+from django.urls import path
 import csv
 
 # Register your models here.
@@ -44,6 +45,7 @@ class StudentAdmin(admin.ModelAdmin):
 
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
+    change_list_template = "portal/application/change_list.html"
     list_display = (
         "id",
         "job_title",
@@ -72,6 +74,17 @@ class ApplicationAdmin(admin.ModelAdmin):
     list_select_related = ("job", "job__employer", "student")
     date_hierarchy = "applied_on"
     actions = ["download_selected_placement_report_csv"]
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "download-full-report/",
+                self.admin_site.admin_view(self.download_full_placement_report_csv),
+                name="portal_application_download_full_report",
+            ),
+        ]
+        return custom_urls + urls
 
     @admin.display(description="Slot")
     def job_title(self, obj):
@@ -107,42 +120,91 @@ class ApplicationAdmin(admin.ModelAdmin):
 
     @admin.action(description="Download selected placement report rows (CSV)")
     def download_selected_placement_report_csv(self, request, queryset):
-        response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = (
-            'attachment; filename="admin_placement_tracking_report.csv"'
+        # response = HttpResponse(content_type="text/csv")
+        # response["Content-Disposition"] = (
+        # 'attachment; filename="admin_placement_tracking_report.csv"'
+        return self._build_csv_response(
+            queryset.select_related("student", "job", "job__employer"),
+            filename="selected_applications_full_report.csv",
         )
+
+    def download_full_placement_report_csv(self, request):
+        queryset = Application.objects.select_related("student", "job", "job__employer")
+        return self._build_csv_response(
+            queryset,
+            filename="all_applications_full_report.csv",
+        )
+
+    def _build_csv_response(self, queryset, *, filename):
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
         writer = csv.writer(response)
         writer.writerow(
             [
-                "Name",
+                # "Name",
+                "Application ID",
+                "Student Name",
+                "Registration Number",
+                "Student Email",
+                "National ID",
                 "Course",
                 "Year of Study",
                 "Institution",
-                "Company",
+                # "Company",
+                "Job Title",
+                "Employer Company",
+                "Employer Industry",
+                "Employer Contact Email",
+                "Job Location",
+                "Insurance Cover Number",
+                "Portfolio Link",
+                "CV File",
+                "Recommendation Letter File",
+                "Cover Letter File",
                 "Date Applied",
+                "Placement Start Date",
                 "Termination Date",
-                "Application Status",
+                # "Application Status",
                 "Duration (days)",
+                "Application Status",
+                "Admin Feedback",
             ]
         )
 
-        for app in queryset.select_related("student", "job", "job__employer"):
+        # for app in queryset.select_related("student", "job", "job__employer"):
+        for app in queryset:
             writer.writerow(
                 [
+                    app.id,
                     app.student.full_name or app.student.user.username,
+                    app.student.reg_no,
+                    app.student.email,
+                    app.student.national_id,
                     app.student.course or "N/A",
                     app.student.year_of_study or "N/A",
                     app.student.institution or "N/A",
+                    app.job.title,
                     app.job.employer.company_name,
-                    app.applied_on.date(),
-                    app.termination_date or "",
-                    app.status,
+                    # app.applied_on.date(),
+                    app.job.employer.industry or "N/A",
+                    app.job.employer.contact_email or "N/A",
+                    app.job.location or "N/A",
+                    app.insurance_cover_no,
+                    app.portfolio_link or "",
+                    app.cv.url if app.cv else "",
+                    app.recommendation_letter.url if app.recommendation_letter else "",
+                    app.cover_letter.url if app.cover_letter else "",
+                    app.applied_on,
+                    app.placement_start_date or "",
                     (
                         app.placement_duration_days
                         if app.placement_duration_days is not None
                         else ""
                     ),
+                    app.termination_date or "",
+                    app.status,
+                    app.admin_feedback or "",
                 ]
             )
         return response
