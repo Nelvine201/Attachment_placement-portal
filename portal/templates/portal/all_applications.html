@@ -3,7 +3,14 @@
 {% block content %}
 <div class="container py-5">
 
-    <h3 class="mb-4">All Applications</h3>
+    <!--<h3 class="mb-4">All Applications</h3>-->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <h3 class="mb-0">Placement Tracking Report</h3>
+        <a href="{% url 'export_placement_report_csv' %}" class="btn btn-outline-primary btn-sm">
+            Export CSV
+        </a>
+    </div>
+
 
     <div class="card border-0 shadow-sm">
         <div class="table-responsive">
@@ -12,20 +19,29 @@
 
                 <thead class="table-light">
                     <tr>
-                        <th>Student</th>
+                        <!--<th>Student</th>
                         <th>Post Applied</th>
-                        <th>Date</th>
+                        <th>Date</th>-->
+                        <th>Name</th>
+                        <th>Course</th>
+                        <th>Year of Study</th>
+                        <th>Institution</th>
+                        <th>Company</th>
+                        <th>Date Applied</th>
+                        <th>Termination Date</th>
                         <th>Status</th>
+                        <th>Duration</th>
                     </tr>
                 </thead>
 
                 <tbody>
 
-                    {% for app in applications %}
+                    <!--{% for app in applications %}-->
+                    {% for row in report_rows %}
 
                     <tr>
 
-                        <td>
+                        <!---- <td>
                             <strong>
                                 {% if app.student.full_name %}
                                 {{ app.student.full_name }}
@@ -47,24 +63,32 @@
 
                         <td>
                             {{ app.applied_on|date:"d M Y" }}
-                        </td>
+                        </td>-->
+                        <td>{{ row.student_name }}</td>
+                        <td>{{ row.course }}</td>
+                        <td>{{ row.year_of_study }}</td>
+                        <td>{{ row.institution }}</td>
+                        <td>{{ row.company }}</td>
+                        <td>{{ row.date_applied|date:"d M Y" }}</td>
+                        <td>{{ row.termination_date|date:"d M Y"|default:"-" }}</td>
 
                         <td>
                             <span class="badge
-{% if app.status == 'Pending' %}bg-warning
-{% elif app.status == 'Accepted' %}bg-success
+                            {% if row.status == 'Pending' %}bg-warning text-dark
+                            {% elif row.status == 'Accepted' %}bg-success
 {% else %}bg-danger
 {% endif %}
 ">
-                                {{ app.status }}
+                                {{ row.status }}
                             </span>
                         </td>
+                        <td>{{ row.duration }}</td>
 
                     </tr>
 
                     {% empty %}
                     <tr>
-                        <td colspan="4" class="text-center text-muted p-4">
+                        <td colspan="9" class="text-csenter text-muted p-4">
                             No applications found
                         </td>
                     </tr>
@@ -77,4 +101,5 @@
     </div>
 
 </div>
+{% endfor %}
 {% endblock %}

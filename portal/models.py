@@ -4,6 +4,7 @@ from django.core.validators import (
     FileExtensionValidator,
     RegexValidator,
 )  # Import this!
+from django.utils import timezone
 
 # Define the rules
 id_validator = RegexValidator(r"^\d{7,8}$", "ID number must be 7 or 8 digits.")
@@ -27,6 +28,8 @@ class Student(models.Model):
     full_name = models.CharField(max_length=100)
     reg_no = models.CharField(max_length=25, unique=True)
     course = models.CharField(max_length=100)
+    year_of_study = models.CharField(max_length=30, blank=True)
+    institution = models.CharField(max_length=150, blank=True)
     email = models.EmailField()
 
     national_id = models.CharField(max_length=8, validators=[id_validator], unique=True)
@@ -97,10 +100,21 @@ class Application(models.Model):
 
     applied_on = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, default="Pending")
+    placement_start_date = models.DateField(null=True, blank=True)
+    termination_date = models.DateField(null=True, blank=True)
     admin_feedback = models.TextField(blank=True, null=True)
 
     class Meta:
         unique_together = ("student", "job")
+
+    @property
+    def placement_duration_days(self):
+        if not self.placement_start_date:
+            return None
+
+        end_date = self.termination_date or timezone.now().date()
+        duration = (end_date - self.placement_start_date).days
+        return duration if duration >= 0 else None
 
 
 class Job(models.Model):

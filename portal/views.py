@@ -1,6 +1,7 @@
 # from django.shortcuts import render
 
-
+import csv
+from datetime import date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .forms import StudentRegistrationForm
@@ -14,6 +15,7 @@ from django.contrib.auth import login, authenticate
 from .forms import ForgotCredentialsForm
 from django.urls import reverse
 from django.conf import settings
+from django.http import HttpResponse
 
 from .forms import JobPostForm
 
@@ -570,12 +572,88 @@ def all_applications(request):
     employer = get_object_or_404(Employer, user=request.user)
 
     applications = Application.objects.filter(job__employer=employer).select_related(
-        "student", "job"
+        "student", "job", "job__employer"
     )
+    report_rows = [_build_placement_report_row(app) for app in applications]
 
     return render(
-        request, "portal/all_applications.html", {"applications": applications}
+        request,
+        "portal/all_applications.html",
+        {"applications": applications, "report_rows": report_rows},
     )
+
+
+def _build_placement_report_row(application):
+    start_date = application.placement_start_date
+    termination_date = application.termination_date
+
+    if start_date:
+        end_date = termination_date or date.today()
+        duration_days = (end_date - start_date).days
+        if duration_days < 0:
+            duration_display = "Invalid dates"
+        else:
+            duration_display = f"{duration_days} day(s)"
+    else:
+        duration_display = "N/A"
+
+    return {
+        "student_name": application.student.full_name
+        or application.student.user.username,
+        "course": application.student.course or "N/A",
+        "year_of_study": application.student.year_of_study or "N/A",
+        "institution": application.student.institution or "N/A",
+        "company": application.job.employer.company_name,
+        "date_applied": application.applied_on.date(),
+        "termination_date": termination_date,
+        "status": application.status,
+        "duration": duration_display,
+    }
+
+
+@login_required
+def export_placement_report_csv(request):
+    employer = get_object_or_404(Employer, user=request.user)
+    applications = Application.objects.filter(job__employer=employer).select_related(
+        "student", "job", "job__employer"
+    )
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = (
+        'attachment; filename="placement_tracking_report.csv"'
+    )
+    writer = csv.writer(response)
+    writer.writerow(
+        [
+            "Name",
+            "Course",
+            "Year of Study",
+            "Institution",
+            "Company",
+            "Date Applied",
+            "Termination Date",
+            "Application Status",
+            "Duration",
+        ]
+    )
+
+    for app in applications:
+        row = _build_placement_report_row(app)
+        writer.writerow(
+            [
+                row["student_name"],
+                row["course"],
+                row["year_of_study"],
+                row["institution"],
+                row["company"],
+                row["date_applied"],
+                row["termination_date"] or "",
+                row["status"],
+                row["duration"],
+            ]
+        )
+
+    return response
 
 
 def job_detail(request, job_id):

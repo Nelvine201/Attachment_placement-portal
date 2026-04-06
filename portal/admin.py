@@ -1,9 +1,10 @@
 from django.contrib import admin
 from django.conf import settings
 from django.core.mail import send_mail
+from django.http import HttpResponse
+import csv
 
 # Register your models here.
-
 from .models import Student, Employer, JobSlot, Application
 
 
@@ -12,7 +13,6 @@ class EmployerAdmin(admin.ModelAdmin):
     list_display = ("company_name", "user", "is_verified")
     list_filter = ("is_verified",)
     search_fields = ("company_name",)
-    pass
     list_editable = ("is_verified",)  # Quick approval from the list
     actions = ["verify_employers"]
 
@@ -31,7 +31,15 @@ class JobSlotAdmin(admin.ModelAdmin):
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ("user", "full_name", "reg_no", "course", "national_id")
+    list_display = (
+        "user",
+        "full_name",
+        "reg_no",
+        "course",
+        "year_of_study",
+        "institution",
+        "national_id",
+    )
 
 
 @admin.register(Application)
@@ -41,23 +49,29 @@ class ApplicationAdmin(admin.ModelAdmin):
         "job_title",
         "employer_company",
         "student_name",
-        "student_username",
-        "student_email",
+        "course",
+        "year_of_study",
+        "institution",
+        "termination_date",
+        "duration_days",
         "status",
         "applied_on",
         "insurance_cover_no",
     )
-    list_filter = ("status", "applied_on", "job__employer")
+    list_filter = ("status", "applied_on", "termination_date", "job__employer")
     search_fields = (
-        "student__user__username",
-        "student__user__email",
-        "student__student_profile__full_name",
+        "student__full_name",
+        "student__reg_no",
+        "student__email",
+        "student__institution",
         "job__title",
         "job__employer__company_name",
         "insurance_cover_no",
     )
-    readonly_fields = ("applied_on",)
+    readonly_fields = ("applied_on", "duration_days")
     list_select_related = ("job", "job__employer", "student")
+    date_hierarchy = "applied_on"
+    actions = ["download_selected_placement_report_csv"]
 
     @admin.display(description="Slot")
     def job_title(self, obj):
@@ -69,17 +83,69 @@ class ApplicationAdmin(admin.ModelAdmin):
 
     @admin.display(description="Student Name")
     def student_name(self, obj):
-        if hasattr(obj.student, "student_profile"):
-            return obj.student.student_profile.full_name
-        return obj.student.user.username
+        return obj.student.full_name or obj.student.user.username
 
-    @admin.display(description="Student Username")
-    def student_username(self, obj):
-        return obj.student.user.username
+    @admin.display(description="Course")
+    def course(self, obj):
+        return obj.student.course
 
-    @admin.display(description="Student Email")
-    def student_email(self, obj):
-        return obj.student.user.email
+    @admin.display(description="Year of Study")
+    def year_of_study(self, obj):
+        return obj.student.year_of_study or "N/A"
+
+    @admin.display(description="Institution")
+    def institution(self, obj):
+        return obj.student.institution or "N/A"
+
+    @admin.display(description="Duration (days)")
+    def duration_days(self, obj):
+        return (
+            obj.placement_duration_days
+            if obj.placement_duration_days is not None
+            else "N/A"
+        )
+
+    @admin.action(description="Download selected placement report rows (CSV)")
+    def download_selected_placement_report_csv(self, request, queryset):
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = (
+            'attachment; filename="admin_placement_tracking_report.csv"'
+        )
+
+        writer = csv.writer(response)
+        writer.writerow(
+            [
+                "Name",
+                "Course",
+                "Year of Study",
+                "Institution",
+                "Company",
+                "Date Applied",
+                "Termination Date",
+                "Application Status",
+                "Duration (days)",
+            ]
+        )
+
+        for app in queryset.select_related("student", "job", "job__employer"):
+            writer.writerow(
+                [
+                    app.student.full_name or app.student.user.username,
+                    app.student.course or "N/A",
+                    app.student.year_of_study or "N/A",
+                    app.student.institution or "N/A",
+                    app.job.employer.company_name,
+                    app.applied_on.date(),
+                    app.termination_date or "",
+                    app.status,
+                    (
+                        app.placement_duration_days
+                        if app.placement_duration_days is not None
+                        else ""
+                    ),
+                ]
+            )
+        return response
 
     def save_model(self, request, obj, form, change):
         previous_status = None

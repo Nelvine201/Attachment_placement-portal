@@ -96,6 +96,11 @@ urlpatterns = [
     path("register/employer/", views.register_employer, name="register_employer"),
     path("dashboard/active-slots/", views.active_slots, name="active_slots"),
     path("dashboard/applications/", views.all_applications, name="all_applications"),
+    path(
+        "dashboard/applications/export/csv/",
+        views.export_placement_report_csv,
+        name="export_placement_report_csv",
+    ),
     path("job/<int:job_id>/", views.job_detail, name="job_detail"),
     path("application/<int:pk>/", views.application_detail, name="application_detail"),
     path("notifications/", views.notifications, name="notifications"),
