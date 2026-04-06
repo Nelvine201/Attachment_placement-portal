@@ -23,7 +23,7 @@
             </div>--->
 <style>
     .register-wrap {
-        max-width: 920px;
+        max-width: 760px;
         margin: 0 auto;
     }
 
@@ -39,10 +39,6 @@
         padding: 32px;
     }
 
-    .register-accent {
-        background: linear-gradient(140deg, #2f63ff, #16b7ff);
-        color: #fff;
-    }
 
     .register-form p {
         margin-bottom: 16px;
@@ -60,16 +56,8 @@
 
 <div class="register-wrap">
     <div class="row g-0 register-card overflow-hidden">
-        <div class="col-lg-5 register-pane register-accent">
-            <h3 class="fw-bold">Join CareerBridge</h3>
-            <p class="mb-3">Create your student profile to unlock applications and track opportunities in one place.</p>
-            <ul class="mb-0">
-                <li class="mb-2">One-click apply flow</li>
-                <li class="mb-2">Deadline reminders</li>
-                <li>Employer feedback updates</li>
-            </ul>
-        </div>
-        <div class="col-lg-7 register-pane">
+        <div class="col-12 register-pane">
+
             <h4 class="fw-bold mb-3">Student Registration</h4>
             <form method="POST" class="register-form">
                 {% csrf_token %}

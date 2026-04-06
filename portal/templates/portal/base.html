@@ -64,18 +64,18 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark mb-4 shadow">
         <div class="container">
-            <!--<a class="navbar-brand fw-bold" href="/">CareerBridge</a>-->
-            <a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'home' %}">
+            <a class="navbar-brand fw-bold" href="/">CareerBridge</a>
+            <!--<a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'home' %}">
                 {% load static %}
                 <img src="{% static 'images/portal.png' %}" alt="CareerBridge Logo" class="brand-logo me-2">
-            </a>
+            </a>-->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <a class="nav-link" href="{% url 'home' %}">Home</a>
-                    <a class="nav-link" href="{% url 'about' %}">About</a>
+                    <!--<a class="nav-link" href="{% url 'about' %}">About</a>-->
                     <a class="nav-link" href="{% url 'login' %}">Student Login</a>
                     <a class="nav-link employer-portal-btn" href="{% url 'register_employer' %}">Employer Portal</a>
 

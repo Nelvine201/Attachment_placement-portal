@@ -13,8 +13,9 @@ class StudentRegistrationForm(forms.ModelForm):
     password = forms.CharField(
         widget=forms.PasswordInput(
             attrs={"class": "form-control", "id": "id_password"}
-        ),
-        help_text=password_validators_help_text_html(),
+            # ),
+            # help_text=password_validators_help_text_html(),
+        )
     )
 
     class Meta:

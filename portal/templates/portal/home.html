@@ -56,6 +56,48 @@
         background-color: #1D4ED8;
     }
 
+    .about-social-section {
+        margin-top: 8px;
+    }
+
+    .about-card {
+        grid-column: span 8;
+        padding: 30px;
+    }
+
+    .social-card {
+        grid-column: span 4;
+        padding: 30px;
+    }
+
+    .social-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    .social-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        color: #1E3A8A;
+        font-weight: 600;
+        border: 1px solid rgba(30, 58, 138, 0.2);
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(37, 99, 235, 0.06);
+        transition: all 0.2s ease;
+    }
+
+    .social-link:hover {
+        color: #0F766E;
+        border-color: rgba(15, 118, 110, 0.35);
+        background: rgba(15, 118, 110, 0.09);
+    }
+
+
 
     .fade-up {
         opacity: 0;
@@ -71,6 +113,11 @@
     @media (max-width: 991px) {
         .hero-searchbar {
             grid-template-columns: 1fr 1fr;
+        }
+
+        .about-card,
+        .social-card {
+            grid-column: span 12;
         }
     }
 
@@ -93,6 +140,37 @@
 
     </div>
 </section>
+<section class="home-grid about-social-section">
+    <div class="about-card glass-card fade-up">
+        <h2 class="h3 fw-bold mb-3">About CareerBridge</h2>
+        <p class="mb-2 text-muted">
+            CareerBridge connects students, universities, and employers in one streamlined industrial attachment
+            platform.
+            We help students discover placement slots faster, apply with confidence, and track outcomes in one place.
+        </p>
+        <p class="mb-0 text-muted">
+            Employers can publish and manage opportunities efficiently, while institutions keep clear visibility over
+            student placements and progress.
+        </p>
+    </div>
+
+    <div class="social-card glass-card fade-up">
+        <h3 class="h5 fw-bold mb-2">Connect with us</h3>
+        <p class="text-muted mb-0">Follow our updates and reach out through our social handles.</p>
+        <div class="social-links">
+            <a class="social-link" href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer">
+                <i class="bi bi-linkedin"></i> LinkedIn
+            </a>
+            <a class="social-link" href="https://x.com" target="_blank" rel="noopener noreferrer">
+                <i class="bi bi-twitter-x"></i> X
+            </a>
+            <a class="social-link" href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
+                <i class="bi bi-instagram"></i> Instagram
+            </a>
+        </div>
+    </div>
+</section>
+
 <script>
     const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
