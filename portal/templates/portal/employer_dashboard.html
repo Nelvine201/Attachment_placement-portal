@@ -106,21 +106,26 @@
                         </a>
                         <a href="{% url 'all_applications' %}?status=Accepted"
                             class="d-flex justify-content-between align-items-center p-3 rounded bg-success-subtle text-decoration-none text-dark">
-                            <span class="fw-semibold">Accepted</span>
+                            <span class="fw-semibold">Approved</span>
                             <span class="badge bg-success rounded-pill">{{ accepted_apps.count }}</span>
-                    </div>
+                            <!--- </div>
                     <div class="d-flex justify-content-between align-items-center p-3 rounded bg-danger-subtle">
                         <span class="fw-semibold">Rejected</span>
-                        <span class="badge bg-danger rounded-pill">{{ rejected_apps.count }}</span>
+                        <span class="badge bg-danger rounded-pill">{{ rejected_apps.count }}</span>--->
+                        </a>
+                        <a href="{% url 'all_applications' %}?status=Rejected"
+                            class="d-flex justify-content-between align-items-center p-3 rounded bg-danger-subtle text-decoration-none text-dark">
+                            <span class="fw-semibold">Rejected</span>
+                            <span class="badge bg-danger rounded-pill">{{ rejected_apps.count }}</span>
                         </a>
 
                     </div>
                 </div>
             </div>
-        </div>
 
 
-        <div class="card dashboard-panel shadow-sm">
+
+            <!---- <div class="card dashboard-panel shadow-sm">
             <div class="card-body">
                 <h5 class="fw-bold mb-3">Recent Applications</h5>
                 <div class="list-group compact-list">
@@ -143,7 +148,40 @@
                     </a>
                     {% empty %}
                     <div class="text-muted small">No applications found.</div>
-                    {% endfor %}
+                    {% endfor %}-->
+            <!----  <div class="card dashboard-panel shadow-sm">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Recent Applications</h5>
+                    <div class="list-group compact-list">
+                        {% for app in applications|slice:":6" %}
+                        <a href="{% url 'review_application_documents' app.id %}"
+                            class="list-group-item list-group-item-action border rounded mb-2">
+                            <div class="row g-2 align-items-center">
+                                <div class="col-7">
+                                    <strong class="small d-block">
+                                        {% if app.student.full_name %}
+                                        {{ app.student.full_name }}
+                                        {% else %}
+                                        {{ app.student.user.username }}
+                                        {% endif %}
+                                    </strong>
+                                    <small class="text-muted d-block text-truncate">{{ app.job.title }}</small>
+                                    <small class="text-muted d-block">Reg: {{ app.student.reg_no|default:"N/A"
+                                        }}</small>
+                                </div>
+                                <div class="col-5 text-end">
+                                    <small class="text-muted d-block mb-1">{{ app.applied_on|date:"d M" }}</small>
+                                    <span
+                                        class="badge {% if app.status == 'Pending' %}bg-warning text-dark{% elif app.status == 'Accepted' %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ app.status }}
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                        {% empty %}
+                        <div class="text-muted small">No applications found.</div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -168,45 +206,48 @@
                         <div class="accordion-body">
                             <p><strong>Registration no:</strong> {{ app.student.reg_no|default:"N/A" }}</p>
                             <p><strong>Course:</strong> {{ app.student.course|default:"N/A" }}</p>
-                            <p><strong>Email:</strong> {{ app.student.email|default:"N/A" }}</p>
+                            <p><strong>Email:</strong> {{ app.student.email|default:"N/A" }}</p>-->
 
-                            <div class="mt-3 d-flex flex-wrap gap-2">
-                                <a href="{% url 'review_application_documents' app.id %}"
-                                    class="btn btn-sm btn-outline-secondary">Review Documents </a>
-                                <a href="{% url 'update_application_status' app.id 'Accepted' %}"
-                                    class="btn btn-sm btn-success">Approved </a>
-                                <a href="{% url 'update_application_status' app.id 'Rejected' %}"
-                                    class="btn btn-sm btn-danger">Reject </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% empty %}
-                <div class="text-center text-muted py-4">No applications found.</div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-    <h5 class="fw-bold mt-5 mb-4">Manage Posted Jobs</h5>
-    <div class="row g-4">
-        {% for job in my_jobs %}
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm h-100">
+            <div class="mt-3 d-flex flex-wrap gap-2">
                 <div class="card-body">
-                    <h6 class="fw-bold text-primary mb-2">{{ job.title }}</h6>
-                    <p class="small text-muted mb-3">Deadline: {{ job.deadline }}</p>
-                    <div class="d-flex gap-2">
-                        <a href="{% url 'edit_job' job.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
-                        <form method="post" action="{% url 'delete_job' job.id %}"
-                            onsubmit="return confirm('Delete job slot?')">
-                            {% csrf_token %}
-                            <button class="btn btn-sm btn-outline-danger">Delete</button>
-                        </form>
-                    </div>
+                    <h5 class="fw-bold mb-3">Recent Applications</h5>
+                    <a href="{% url 'review_application_documents' app.id %}"
+                        class="btn btn-sm btn-outline-secondary">Review Documents </a>
+                    <a href="{% url 'update_application_status' app.id 'Accepted' %}"
+                        class="btn btn-sm btn-success">Approved </a>
+                    <a href="{% url 'update_application_status' app.id 'Rejected' %}"
+                        class="btn btn-sm btn-danger">Reject
+                    </a>
                 </div>
             </div>
         </div>
-        {% endfor %}
     </div>
+    {% empty %}
+    <div class="text-center text-muted py-4">No applications found.</div>
+    {% endfor %}
+</div>
+</div>
+</div>
+<h5 class="fw-bold mt-5 mb-4">Manage Posted Jobs</h5>
+<div class="row g-4">
+    {% for job in my_jobs %}
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-primary mb-2">{{ job.title }}</h6>
+                <p class="small text-muted mb-3">Deadline: {{ job.deadline }}</p>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'edit_job' job.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <form method="post" action="{% url 'delete_job' job.id %}"
+                        onsubmit="return confirm('Delete job slot?')">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
 
 </div> {% endblock %}
