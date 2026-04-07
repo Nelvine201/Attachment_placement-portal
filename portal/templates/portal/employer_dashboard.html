@@ -96,138 +96,68 @@
                 <div class="card-body">
                     <h5 class="fw-bold mb-3">Applications Overview</h5>
                     <div class="d-grid gap-2">
-                        <!---<div class="d-flex justify-content-between align-items-center p-3 rounded bg-warning-subtle">--->
                         <a href="{% url 'all_applications' %}?status=Pending"
                             class="d-flex justify-content-between align-items-center p-3 rounded bg-warning-subtle text-decoration-none text-dark">
                             <span class="fw-semibold">Pending</span>
                             <span class="badge bg-warning text-dark rounded-pill">{{ pending_apps.count }}</span>
-                            <!---- </div>
-                        <div class="d-flex justify-content-between align-items-center p-3 rounded bg-success-subtle">-->
                         </a>
                         <a href="{% url 'all_applications' %}?status=Accepted"
                             class="d-flex justify-content-between align-items-center p-3 rounded bg-success-subtle text-decoration-none text-dark">
                             <span class="fw-semibold">Approved</span>
                             <span class="badge bg-success rounded-pill">{{ accepted_apps.count }}</span>
-                            <!--- </div>
-                    <div class="d-flex justify-content-between align-items-center p-3 rounded bg-danger-subtle">
-                        <span class="fw-semibold">Rejected</span>
-                        <span class="badge bg-danger rounded-pill">{{ rejected_apps.count }}</span>--->
                         </a>
                         <a href="{% url 'all_applications' %}?status=Rejected"
                             class="d-flex justify-content-between align-items-center p-3 rounded bg-danger-subtle text-decoration-none text-dark">
                             <span class="fw-semibold">Rejected</span>
                             <span class="badge bg-danger rounded-pill">{{ rejected_apps.count }}</span>
                         </a>
-
                     </div>
-                </div>
-            </div>
-
-
-
-            <!---- <div class="card dashboard-panel shadow-sm">
-            <div class="card-body">
-                <h5 class="fw-bold mb-3">Recent Applications</h5>
-                <div class="list-group compact-list">
-                    {% for app in applications|slice:":6" %}
-                    <a href="{% url 'review_application_documents' app.id %}"
-                        class="list-group-item list-group-item-action border rounded mb-2">
-                        <div class="d-flex justify-content-between">
-                            <strong class="small">{{ app.student.full_name|default:app.student.user.username
-                                }}</strong>
-                            <small class="text-muted">{{ app.applied_on|date:"d M" }}</small>
-                        </div>
-                        <small class="text-muted d-block">{{ app.job.title }}</small>
-                        <small class="d-flex justify-content-between mt-1">
-                            <span class="text-muted">Reg: {{ app.student.reg_no|default:"N/A" }}</span>
-                            <span
-                                class="badge {% if app.status == 'Pending' %}bg-warning text-dark{% elif app.status == 'Accepted' %}bg-success{% else %}bg-danger{% endif %}">
-                                {{ app.status }}
-                            </span>
-                        </small>
-                    </a>
-                    {% empty %}
-                    <div class="text-muted small">No applications found.</div>
-                    {% endfor %}-->
-            <!----  <div class="card dashboard-panel shadow-sm">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3">Recent Applications</h5>
-                    <div class="list-group compact-list">
-                        {% for app in applications|slice:":6" %}
-                        <a href="{% url 'review_application_documents' app.id %}"
-                            class="list-group-item list-group-item-action border rounded mb-2">
-                            <div class="row g-2 align-items-center">
-                                <div class="col-7">
-                                    <strong class="small d-block">
-                                        {% if app.student.full_name %}
-                                        {{ app.student.full_name }}
-                                        {% else %}
-                                        {{ app.student.user.username }}
-                                        {% endif %}
-                                    </strong>
-                                    <small class="text-muted d-block text-truncate">{{ app.job.title }}</small>
-                                    <small class="text-muted d-block">Reg: {{ app.student.reg_no|default:"N/A"
-                                        }}</small>
-                                </div>
-                                <div class="col-5 text-end">
-                                    <small class="text-muted d-block mb-1">{{ app.applied_on|date:"d M" }}</small>
-                                    <span
-                                        class="badge {% if app.status == 'Pending' %}bg-warning text-dark{% elif app.status == 'Accepted' %}bg-success{% else %}bg-danger{% endif %}">
-                                        {{ app.status }}
-                                    </span>
-                                </div>
-                            </div>
-                        </a>
-                        {% empty %}
-                        <div class="text-muted small">No applications found.</div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-8">
-            <div class="accordion" id="applicationAccordion">
-                {% for app in applications %}
-                <div class="accordion-item border shadow-sm mb-3 rounded">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapse{{ app.id }}">
-                            <div class="d-flex justify-content-between w-100 pe-3">
-                                <div>
-                                    <strong>{{ app.student.full_name|default:app.student.user.username }}</strong>
-                                    <div class="small text-muted">{{ app.job.title }}</div>
-                                </div>
-                                <div class="small text-muted">{{ app.applied_on|date:"d M Y" }}</div>
-                            </div>
-                        </button>
-                    </h2>
-                    <div id="collapse{{ app.id }}" class="accordion-collapse collapse"
-                        data-bs-parent="#applicationAccordion">
-                        <div class="accordion-body">
-                            <p><strong>Registration no:</strong> {{ app.student.reg_no|default:"N/A" }}</p>
-                            <p><strong>Course:</strong> {{ app.student.course|default:"N/A" }}</p>
-                            <p><strong>Email:</strong> {{ app.student.email|default:"N/A" }}</p>-->
-
-            <div class="mt-3 d-flex flex-wrap gap-2">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3">Recent Applications</h5>
-                    <a href="{% url 'review_application_documents' app.id %}"
-                        class="btn btn-sm btn-outline-secondary">Review Documents </a>
-                    <a href="{% url 'update_application_status' app.id 'Accepted' %}"
-                        class="btn btn-sm btn-success">Approved </a>
-                    <a href="{% url 'update_application_status' app.id 'Rejected' %}"
-                        class="btn btn-sm btn-danger">Reject
-                    </a>
                 </div>
             </div>
         </div>
     </div>
-    {% empty %}
-    <div class="text-center text-muted py-4">No applications found.</div>
-    {% endfor %}
+
+    <div class="col-lg-8">
+        <div class="card dashboard-panel shadow-sm">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Recent Applications</h5>
+                <div class="list-group compact-list">
+                    {% for app in applications|slice:":6" %}
+                    <div class="list-group-item border rounded mb-2">
+                        <div class="d-flex justify-content-between flex-wrap gap-2">
+                            <div>
+                                <strong class="small d-block">{{
+                                    app.student.full_name|default:app.student.user.username }}</strong>
+                                <small class="text-muted d-block">{{ app.job.title }}</small>
+                                <small class="text-muted d-block">Reg: {{
+                                    app.student.reg_no|default:"N/A"
+                                    }}</small>
+                                <small class="text-muted d-block">{{ app.applied_on|date:"d M Y"
+                                    }}</small>
+                            </div>
+                            <span
+                                class="badge align-self-start {% if app.status == 'Pending' %}bg-warning text-dark{% elif app.status == 'Accepted' %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ app.status }}
+                            </span>
+                        </div>
+                        <div class="mt-2 d-flex flex-wrap gap-2">
+                            <a href="{% url 'review_application_documents' app.id %}"
+                                class="btn btn-sm btn-outline-secondary">Review Documents</a>
+                            <a href="{% url 'update_application_status' app.id 'Accepted' %}"
+                                class="btn btn-sm btn-success">Approve</a>
+                            <a href="{% url 'update_application_status' app.id 'Rejected' %}"
+                                class="btn btn-sm btn-danger">Reject</a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-muted small">No applications found.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-</div>
-</div>
+
 <h5 class="fw-bold mt-5 mb-4">Manage Posted Jobs</h5>
 <div class="row g-4">
     {% for job in my_jobs %}
