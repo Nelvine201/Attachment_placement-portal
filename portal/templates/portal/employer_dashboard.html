@@ -18,7 +18,7 @@
         border-radius: 14px;
     }
 
-    .compact-list .list-group-item {
+    .compact-list {
         padding: 0.75rem 1rem;
     }
 </style>
@@ -121,32 +121,32 @@
         <div class="card dashboard-panel shadow-sm">
             <div class="card-body">
                 <h5 class="fw-bold mb-3">Recent Applications</h5>
-                <div class="list-group compact-list">
+                <div class="d-grid gap-2">
                     {% for app in applications|slice:":6" %}
-                    <div class="list-group-item border rounded mb-2">
-                        <div class="d-flex justify-content-between flex-wrap gap-2">
-                            <div>
-                                <strong class="small d-block">{{
-                                    app.student.full_name|default:app.student.user.username }}</strong>
-                                <small class="text-muted d-block">{{ app.job.title }}</small>
-                                <small class="text-muted d-block">Reg: {{
-                                    app.student.reg_no|default:"N/A"
-                                    }}</small>
-                                <small class="text-muted d-block">{{ app.applied_on|date:"d M Y"
-                                    }}</small>
-                            </div>
+                    <div class="border rounded">
+                        <button
+                            class="btn w-100 text-start d-flex justify-content-between align-items-center compact-list"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#recentApp{{ app.id }}"
+                            aria-expanded="false" aria-controls="recentApp{{ app.id }}">
+                            <span class="small fw-semibold">{{ app.student.full_name|default:app.student.user.username
+                                }}</span>
                             <span
-                                class="badge align-self-start {% if app.status == 'Pending' %}bg-warning text-dark{% elif app.status == 'Accepted' %}bg-success{% else %}bg-danger{% endif %}">
-                                {{ app.status }}
-                            </span>
-                        </div>
-                        <div class="mt-2 d-flex flex-wrap gap-2">
-                            <a href="{% url 'review_application_documents' app.id %}"
-                                class="btn btn-sm btn-outline-secondary">Review Documents</a>
-                            <a href="{% url 'update_application_status' app.id 'Accepted' %}"
-                                class="btn btn-sm btn-success">Approve</a>
-                            <a href="{% url 'update_application_status' app.id 'Rejected' %}"
-                                class="btn btn-sm btn-danger">Reject</a>
+                                class="badge {% if app.status == 'Pending' %}bg-warning text-dark{% elif app.status == 'Accepted' %}bg-success{% else %}bg-danger{% endif %}">{{
+                                app.status }}</span>
+                        </button>
+                        <div id="recentApp{{ app.id }}" class="collapse px-3 pb-3">
+                            <small class="text-muted d-block">{{ app.job.title }}</small>
+                            <small class="text-muted d-block">Reg: {{ app.student.reg_no|default:"N/A" }}</small>
+                            <small class="text-muted d-block mb-2">{{ app.applied_on|date:"d M Y" }}</small>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="{% url 'review_application_documents' app.id %}"
+                                    class="btn btn-sm btn-outline-secondary">Review Documents</a>
+                                <a href="{% url 'update_application_status' app.id 'Accepted' %}"
+                                    class="btn btn-sm btn-success">Approve</a>
+                                <a href="{% url 'update_application_status' app.id 'Rejected' %}"
+                                    class="btn btn-sm btn-danger">Reject</a>
+                            </div>
+
                         </div>
                     </div>
                     {% empty %}
