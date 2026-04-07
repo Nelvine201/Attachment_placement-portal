@@ -1,30 +1,23 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!--<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">Student Registration</h4>
-            </div>
-            <div class="card-body">
-                <form method="POST">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <button type="submit" class="btn btn-success w-100">Register Now</button>
-                </form>
-                <hr class="my-4">
-                <div class="text-center">
-                    <p class="mb-1">Already have an account?</p>
-                    <a href="{% url 'login' %}" class="btn btn-outline-secondary w-100">
-                        Go to Student Login
-                    </a>
-                </div>
-            </div>--->
+
 <style>
+    .register-page {
+        min-height: calc(100vh - 120px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 12px;
+        background: linear-gradient(145deg, #eaf1ff 0%, #dce8ff 45%, #f4f8ff 100%);
+        border-radius: 20px;
+    }
+
     .register-wrap {
-        max-width: 760px;
-        margin: 0 auto;
+
+        width: 100%;
+        max-width: 840px;
+        margin: 0;
     }
 
     .register-card {
@@ -52,6 +45,30 @@
         border: 1px solid #dbe3ff;
         padding: 10px 12px;
     }
+
+
+    .field-errors {
+        margin-top: 6px;
+        color: #dc3545;
+        font-size: 0.9rem;
+    }
+
+    .field-errors ul {
+        margin-bottom: 0;
+        padding-left: 18px;
+    }
+
+    @media (max-width: 768px) {
+        .register-page {
+            min-height: auto;
+            border-radius: 14px;
+            padding: 14px 8px;
+        }
+
+        .register-pane {
+            padding: 22px 18px;
+        }
+    }
 </style>
 
 <div class="register-wrap">
@@ -59,9 +76,66 @@
         <div class="col-12 register-pane">
 
             <h4 class="fw-bold mb-3">Student Registration</h4>
-            <form method="POST" class="register-form">
+            <!--<form method="POST" class="register-form">--->
+            <form method="POST" class="register-form" novalidate>
                 {% csrf_token %}
-                {{ form.as_p }}
+                <!--{{ form.as_p }}-->
+                <p>
+                    {{ form.full_name.label_tag }}
+                    {{ form.full_name }}
+                    {% if form.full_name.errors %}
+                <div class="field-errors">{{ form.full_name.errors }}</div>
+                {% endif %}
+                </p>
+
+                <p>
+                    {{ form.reg_no.label_tag }}
+                    {{ form.reg_no }}
+                    {% if form.reg_no.errors %}
+                <div class="field-errors">{{ form.reg_no.errors }}</div>
+                {% endif %}
+                </p>
+
+                <p>
+                    {{ form.course.label_tag }}
+                    {{ form.course }}
+                    {% if form.course.errors %}
+                <div class="field-errors">{{ form.course.errors }}</div>
+                {% endif %}
+                </p>
+
+                <p>
+                    {{ form.email.label_tag }}
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                <div class="field-errors">{{ form.email.errors }}</div>
+                {% endif %}
+                </p>
+
+                <p>
+                    {{ form.national_id.label_tag }}
+                    {{ form.national_id }}
+                    {% if form.national_id.errors %}
+                <div class="field-errors">{{ form.national_id.errors }}</div>
+                {% endif %}
+                </p>
+
+                <p>
+                    {{ form.password.label_tag }}
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                <div class="field-errors">{{ form.password.errors }}</div>
+                {% endif %}
+                </p>
+
+                <div id="password-rules"
+                    class="alert alert-warning py-2 px-3 {% if not form.password.errors %}d-none{% endif %}">
+                    <small class="fw-semibold d-block mb-1">Password rules:</small>
+                    <ul class="mb-0" id="password-rules-list">
+                        <li data-rule="minLength">At least 8 characters.</li>
+                        <li data-rule="notNumeric">Cannot be numbers only.</li>
+                    </ul>
+                </div>
                 <button type="submit" class="btn btn-primary w-100 py-2 mt-2">Create Student Account</button>
             </form>
             <hr class="my-4">
@@ -70,4 +144,43 @@
         </div>
     </div>
 </div>
+<script>
+    (function () {
+        const passwordInput = document.getElementById('id_password');
+        const rulesBox = document.getElementById('password-rules');
+
+        if (!passwordInput || !rulesBox) {
+            return;
+        }
+
+        const validators = {
+            minLength: (value) => value.length >= 8,
+            notNumeric: (value) => !/^\d+$/.test(value),
+        };
+
+        const updateRulesVisibility = () => {
+            const value = passwordInput.value || '';
+
+            if (!value) {
+                rulesBox.classList.add('d-none');
+                return;
+            }
+
+            let hasFailedRule = false;
+            rulesBox.querySelectorAll('[data-rule]').forEach((item) => {
+                const ruleName = item.getAttribute('data-rule');
+                const passed = validators[ruleName](value);
+
+                item.classList.toggle('d-none', passed);
+                hasFailedRule = hasFailedRule || !passed;
+            });
+
+            rulesBox.classList.toggle('d-none', !hasFailedRule);
+        };
+
+        passwordInput.addEventListener('input', updateRulesVisibility);
+        passwordInput.addEventListener('blur', updateRulesVisibility);
+        updateRulesVisibility();
+    })();
+</script>
 {% endblock %}
