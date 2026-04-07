@@ -255,8 +255,12 @@ def employer_dashboard(request):
 
     my_jobs = JobSlot.objects.filter(employer=employer)
 
-    applications = Application.objects.filter(job__employer=employer).select_related(
-        "student", "job"
+    # applications = Application.objects.filter(job__employer=employer).select_related(
+    #    "student", "job"
+    applications = (
+        Application.objects.filter(job__employer=employer)
+        .select_related("student", "job")
+        .order_by("-applied_on")
     )
     pending_apps = applications.filter(status="Pending")
     accepted_apps = applications.filter(status="Accepted")
@@ -581,15 +585,31 @@ def active_slots(request):
 def all_applications(request):
     employer = get_object_or_404(Employer, user=request.user)
 
-    applications = Application.objects.filter(job__employer=employer).select_related(
-        "student", "job", "job__employer"
+    # applications = Application.objects.filter(job__employer=employer).select_related(
+    #   "student", "job", "job__employer"
+    status_filter = request.GET.get("status", "").strip()
+
+    applications = (
+        Application.objects.filter(job__employer=employer)
+        .select_related("student", "job", "job__employer")
+        .order_by("-applied_on")
     )
+
+    valid_statuses = {"Pending", "Accepted", "Rejected"}
+    if status_filter in valid_statuses:
+        applications = applications.filter(status=status_filter)
+
     report_rows = [_build_placement_report_row(app) for app in applications]
 
     return render(
         request,
         "portal/all_applications.html",
-        {"applications": applications, "report_rows": report_rows},
+        # {"applications": applications, "report_rows": report_rows},
+        {
+            "applications": applications,
+            "report_rows": report_rows,
+            "status_filter": status_filter,
+        },
     )
 
 

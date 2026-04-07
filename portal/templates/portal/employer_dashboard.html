@@ -96,18 +96,24 @@
                 <div class="card-body">
                     <h5 class="fw-bold mb-3">Applications Overview</h5>
                     <div class="d-grid gap-2">
-                        <div class="d-flex justify-content-between align-items-center p-3 rounded bg-warning-subtle">
+                        <!---<div class="d-flex justify-content-between align-items-center p-3 rounded bg-warning-subtle">--->
+                        <a href="{% url 'all_applications' %}?status=Pending"
+                            class="d-flex justify-content-between align-items-center p-3 rounded bg-warning-subtle text-decoration-none text-dark">
                             <span class="fw-semibold">Pending</span>
                             <span class="badge bg-warning text-dark rounded-pill">{{ pending_apps.count }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center p-3 rounded bg-success-subtle">
+                            <!---- </div>
+                        <div class="d-flex justify-content-between align-items-center p-3 rounded bg-success-subtle">-->
+                        </a>
+                        <a href="{% url 'all_applications' %}?status=Accepted"
+                            class="d-flex justify-content-between align-items-center p-3 rounded bg-success-subtle text-decoration-none text-dark">
                             <span class="fw-semibold">Accepted</span>
                             <span class="badge bg-success rounded-pill">{{ accepted_apps.count }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center p-3 rounded bg-danger-subtle">
-                            <span class="fw-semibold">Rejected</span>
-                            <span class="badge bg-danger rounded-pill">{{ rejected_apps.count }}</span>
-                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center p-3 rounded bg-danger-subtle">
+                        <span class="fw-semibold">Rejected</span>
+                        <span class="badge bg-danger rounded-pill">{{ rejected_apps.count }}</span>
+                        </a>
+
                     </div>
                 </div>
             </div>
@@ -127,6 +133,13 @@
                             <small class="text-muted">{{ app.applied_on|date:"d M" }}</small>
                         </div>
                         <small class="text-muted d-block">{{ app.job.title }}</small>
+                        <small class="d-flex justify-content-between mt-1">
+                            <span class="text-muted">Reg: {{ app.student.reg_no|default:"N/A" }}</span>
+                            <span
+                                class="badge {% if app.status == 'Pending' %}bg-warning text-dark{% elif app.status == 'Accepted' %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ app.status }}
+                            </span>
+                        </small>
                     </a>
                     {% empty %}
                     <div class="text-muted small">No applications found.</div>
