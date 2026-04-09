@@ -31,6 +31,7 @@ class Student(models.Model):
     year_of_study = models.CharField(max_length=30, blank=True)
     institution = models.CharField(max_length=150, blank=True)
     email = models.EmailField()
+    phone_number = models.CharField(max_length=20, blank=True)
 
     national_id = models.CharField(max_length=8, validators=[id_validator], unique=True)
 

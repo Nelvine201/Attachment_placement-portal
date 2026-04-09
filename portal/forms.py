@@ -20,7 +20,14 @@ class StudentRegistrationForm(forms.ModelForm):
 
     class Meta:
         model = Student
-        fields = ["full_name", "reg_no", "course", "email", "national_id"]
+        fields = [
+            "full_name",
+            "reg_no",
+            "course",
+            "email",
+            "phone_number",
+            "national_id",
+        ]
 
         widgets = {
             "full_name": forms.TextInput(attrs={"class": "form-control"}),
@@ -28,6 +35,9 @@ class StudentRegistrationForm(forms.ModelForm):
             "course": forms.TextInput(attrs={"class": "form-control"}),
             "email": forms.EmailInput(attrs={"class": "form-control"}),
             "national_id": forms.TextInput(attrs={"class": "form-control"}),
+            "phone_number": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "e.g. +2547********"}
+            ),
         }
 
     def clean_password(self):

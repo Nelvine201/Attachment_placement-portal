@@ -59,9 +59,7 @@
 
             <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
-                <button class="btn btn-outline-danger shadow-sm">
-                    Logout
-                </button>
+                <button class="btn btn-outline-danger shadow-sm">Logout</button>
             </form>
         </div>
     </div>
@@ -115,69 +113,91 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-lg-8">
-        <div class="card dashboard-panel shadow-sm">
-            <div class="card-body">
-                <h5 class="fw-bold mb-3">Recent Applications</h5>
-                <div class="d-grid gap-2">
-                    {% for app in applications|slice:":6" %}
-                    <div class="border rounded">
-                        <button
-                            class="btn w-100 text-start d-flex justify-content-between align-items-center compact-list"
-                            type="button" data-bs-toggle="collapse" data-bs-target="#recentApp{{ app.id }}"
-                            aria-expanded="false" aria-controls="recentApp{{ app.id }}">
-                            <span class="small fw-semibold">{{ app.student.full_name|default:app.student.user.username
-                                }}</span>
-                            <span
-                                class="badge {% if app.status == 'Pending' %}bg-warning text-dark{% elif app.status == 'Accepted' %}bg-success{% else %}bg-danger{% endif %}">{{
-                                app.status }}</span>
-                        </button>
-                        <div id="recentApp{{ app.id }}" class="collapse px-3 pb-3">
-                            <small class="text-muted d-block">{{ app.job.title }}</small>
-                            <small class="text-muted d-block">Reg: {{ app.student.reg_no|default:"N/A" }}</small>
-                            <small class="text-muted d-block mb-2">{{ app.applied_on|date:"d M Y" }}</small>
-                            <div class="d-flex flex-wrap gap-2">
-                                <a href="{% url 'review_application_documents' app.id %}"
-                                    class="btn btn-sm btn-outline-secondary">Review Documents</a>
-                                <a href="{% url 'update_application_status' app.id 'Accepted' %}"
-                                    class="btn btn-sm btn-success">Approve</a>
-                                <a href="{% url 'update_application_status' app.id 'Rejected' %}"
-                                    class="btn btn-sm btn-danger">Reject</a>
+        <div class="col-lg-8">
+            <div class="card dashboard-panel shadow-sm">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Recent Applications</h5>
+                    <div class="d-grid gap-2">
+                        {% for app in applications|slice:":6" %}
+                        <div class="border rounded">
+                            <button
+                                class="btn w-100 text-start d-flex justify-content-between align-items-center compact-list"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#recentApp{{ app.id }}"
+                                aria-expanded="false" aria-controls="recentApp{{ app.id }}">
+                                <!--<span class="small fw-semibold">{{
+                                    app.student.full_name|default:app.student.user.username }}</span>
+                                <span-->
+                                <span class="small fw-semibold">
+                                    {% if app.student.full_name %}
+                                    {{ app.student.full_name }}
+                                    {% elif app.student.user.get_full_name %}
+                                    {{ app.student.user.get_full_name }}
+                                    {% else %}
+                                    {{ app.student.user.username|default:"Unknown Student" }}
+                                    {% endif %}
+                                </span>
+                                <!--<span class="badge {% if app.status == 'Pending' %}bg-warning text-dark{% elif app.status ==
+                                'Accepted' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ app.status }}
+                                </span>-->
+                                <span class="badge 
+    {% if app.status == 'Pending' %}
+        bg-warning text-dark
+    {% elif app.status == 'Accepted' or app.status == 'Approved' %}
+        bg-success
+    {% elif app.status == 'Rejected' %}
+        bg-danger
+    {% else %}
+        bg-secondary
+    {% endif %}">
+
+                                    {% if app.status == 'Accepted' %}Approved{% else %}{{ app.status }}{% endif %}
+                                </span>
+                            </button>
+                            <div id="recentApp{{ app.id }}" class="collapse px-3 pb-3">
+                                <small class="text-muted d-block">{{ app.job.title }}</small>
+                                <small class="text-muted d-block">Reg: {{ app.student.reg_no|default:"N/A" }}</small>
+                                <small class="text-muted d-block mb-2">{{ app.applied_on|date:"d M Y" }}</small>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="{% url 'review_application_documents' app.id %}"
+                                        class="btn btn-sm btn-outline-secondary">Review Documents</a>
+                                    <a href="{% url 'update_application_status' app.id 'Accepted' %}"
+                                        class="btn btn-sm btn-success">Approve</a>
+                                    <a href="{% url 'update_application_status' app.id 'Rejected' %}"
+                                        class="btn btn-sm btn-danger">Reject</a>
+                                </div>
                             </div>
-
                         </div>
+                        {% empty %}
+                        <div class="text-muted small">No applications found.</div>
+                        {% endfor %}
                     </div>
-                    {% empty %}
-                    <div class="text-muted small">No applications found.</div>
-                    {% endfor %}
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<h5 class="fw-bold mt-5 mb-4">Manage Posted Jobs</h5>
-<div class="row g-4">
-    {% for job in my_jobs %}
-    <div class="col-md-6">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <h6 class="fw-bold text-primary mb-2">{{ job.title }}</h6>
-                <p class="small text-muted mb-3">Deadline: {{ job.deadline }}</p>
-                <div class="d-flex gap-2">
-                    <a href="{% url 'edit_job' job.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
-                    <form method="post" action="{% url 'delete_job' job.id %}"
-                        onsubmit="return confirm('Delete job slot?')">
-                        {% csrf_token %}
-                        <button class="btn btn-sm btn-outline-danger">Delete</button>
-                    </form>
+    <h5 class="fw-bold mt-5 mb-4">Manage Posted Jobs</h5>
+    <div class="row g-4">
+        {% for job in my_jobs %}
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="fw-bold text-primary mb-2">{{ job.title }}</h6>
+                    <p class="small text-muted mb-3">Deadline: {{ job.deadline }}</p>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'edit_job' job.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <form method="post" action="{% url 'delete_job' job.id %}"
+                            onsubmit="return confirm('Delete job slot?')">
+                            {% csrf_token %}
+                            <button class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
 
 </div> {% endblock %}

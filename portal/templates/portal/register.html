@@ -3,38 +3,37 @@
 {% block content %}
 
 <style>
-    .register-page {
-        min-height: calc(100vh - 120px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 24px 12px;
-        background: linear-gradient(145deg, #eaf1ff 0%, #dce8ff 45%, #f4f8ff 100%);
-        border-radius: 20px;
-    }
-
     .register-wrap {
 
         width: 100%;
-        max-width: 840px;
-        margin: 0;
+        max-width: 920px;
+        margin: 28px auto;
+        padding: 0 12px;
+
     }
 
     .register-card {
-        border-radius: 24px;
-        background: rgba(255, 255, 255, 0.78);
-        border: 1px solid rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(8px);
-        box-shadow: 0 16px 32px rgba(32, 52, 110, 0.12);
+        border-radius: 14px;
+        overflow: hidden;
+        border: 0;
+        box-shadow: 0 10px 24px rgba(17, 56, 120, 0.16);
+    }
+
+    .register-header {
+        background: #0d6efd;
+        color: #fff;
+        text-align: center;
+        padding: 14px 20px;
     }
 
     .register-pane {
-        padding: 32px;
+        padding: 22px 22px 18px;
+        background: linear-gradient(150deg, #edf3ff 0%, #d9e8ff 100%);
     }
 
 
-    .register-form p {
-        margin-bottom: 16px;
+    .field-wrap {
+        margin-bottom: 10px;
     }
 
     .register-form input,
@@ -43,7 +42,7 @@
         width: 100%;
         border-radius: 12px;
         border: 1px solid #dbe3ff;
-        padding: 10px 12px;
+        padding: 8px 10px;
     }
 
 
@@ -59,42 +58,82 @@
     }
 
     @media (max-width: 768px) {
-        .register-page {
-            min-height: auto;
-            border-radius: 14px;
-            padding: 14px 8px;
+        .register-wrap {
+            margin-top: 14px;
+            padding: 0 8px;
         }
 
         .register-pane {
-            padding: 22px 18px;
+            padding: 18px 14px 14px;
         }
     }
 </style>
 
 <div class="register-wrap">
-    <div class="row g-0 register-card overflow-hidden">
-        <div class="col-12 register-pane">
-
-            <h4 class="fw-bold mb-3">Student Registration</h4>
-            <!--<form method="POST" class="register-form">--->
+    <div class="register-card">
+        <div class="register-header">
+            <h4 class="fw-bold mb-0">Student Registration</h4>
+        </div>
+        <div class="register-pane">
             <form method="POST" class="register-form" novalidate>
                 {% csrf_token %}
-                <!--{{ form.as_p }}-->
-                <p>
-                    {{ form.full_name.label_tag }}
-                    {{ form.full_name }}
-                    {% if form.full_name.errors %}
-                <div class="field-errors">{{ form.full_name.errors }}</div>
-                {% endif %}
-                </p>
+                <div class="row">
+                    <div class="col-md-6 field-wrap">
+                        {{ form.full_name.label_tag }}
+                        {{ form.full_name }}
+                        {% if form.full_name.errors %}
+                        <div class="field-errors">{{ form.full_name.errors }}</div>
+                        {% endif %}
+                    </div>
 
-                <p>
-                    {{ form.reg_no.label_tag }}
-                    {{ form.reg_no }}
-                    {% if form.reg_no.errors %}
-                <div class="field-errors">{{ form.reg_no.errors }}</div>
-                {% endif %}
-                </p>
+                    <div class="col-md-6 field-wrap">
+                        {{ form.reg_no.label_tag }}
+                        {{ form.reg_no }}
+                        {% if form.reg_no.errors %}
+                        <div class="field-errors">{{ form.reg_no.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 field-wrap">
+                        {{ form.course.label_tag }}
+                        {{ form.course }}
+                        {% if form.course.errors %}
+                        <div class="field-errors">{{ form.course.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 field-wrap">
+                        {{ form.email.label_tag }}
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                        <div class="field-errors">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 field-wrap">
+                        {{ form.phone_number.label_tag }}
+                        {{ form.phone_number }}
+                        {% if form.phone_number.errors %}
+                        <div class="field-errors">{{ form.phone_number.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 field-wrap">
+                        {{ form.national_id.label_tag }}
+                        {{ form.national_id }}
+                        {% if form.national_id.errors %}
+                        <div class="field-errors">{{ form.national_id.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-12 field-wrap">
+                        {{ form.password.label_tag }}
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                        <div class="field-errors">{{ form.password.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
 
                 <p>
                     {{ form.course.label_tag }}
@@ -136,10 +175,10 @@
                         <li data-rule="notNumeric">Cannot be numbers only.</li>
                     </ul>
                 </div>
-                <button type="submit" class="btn btn-primary w-100 py-2 mt-2">Create Student Account</button>
+                <button type="submit" class="btn btn-primary w-100 py-2 mt-1">Create Student Account</button>
             </form>
-            <hr class="my-4">
-            <p class="mb-1 text-muted">Already have an account?</p>
+            <hr class="my-3">
+            <p class="mb-1 text-muted text-center">Already have an account?</p>
             <a href="{% url 'login' %}" class="btn btn-outline-secondary w-100">Student Sign In</a>
         </div>
     </div>

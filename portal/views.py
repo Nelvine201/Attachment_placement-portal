@@ -113,6 +113,7 @@ def register_student(request):
             full_name = form.cleaned_data.get("full_name")
             reg_no = form.cleaned_data.get("reg_no")
             email = form.cleaned_data.get("email")
+            phone_number = form.cleaned_data.get("phone_number")
             course = form.cleaned_data.get("course")
             password = form.cleaned_data.get("password")
             national_id = form.cleaned_data.get("national_id")
@@ -140,6 +141,7 @@ def register_student(request):
                 full_name=full_name,
                 reg_no=reg_no,
                 email=email,
+                phone_number=phone_number,
                 course=course,
                 national_id=national_id,
             )
@@ -259,8 +261,8 @@ def employer_dashboard(request):
     #    "student", "job"
     applications = (
         Application.objects.filter(job__employer=employer)
-        .select_related("student", "job")
-        .order_by("-applied_on")
+        # .select_related("student", "job")
+        .select_related("student", "student__user", "job").order_by("-applied_on")
     )
     pending_apps = applications.filter(status="Pending")
     accepted_apps = applications.filter(status="Accepted")
