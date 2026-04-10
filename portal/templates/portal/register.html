@@ -101,6 +101,22 @@
                         <div class="field-errors">{{ form.course.errors }}</div>
                         {% endif %}
                     </div>
+                    <div class="col-md-6 field-wrap">
+                        {{ form.department.label_tag }}
+                        {{ form.department }}
+                        {% if form.department.errors %}
+                        <div class="field-errors">{{ form.department.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 field-wrap">
+                        {{ form.institution.label_tag }}
+                        {{ form.institution }}
+                        {% if form.institution.errors %}
+                        <div class="field-errors">{{ form.institution.errors }}</div>
+                        {% endif %}
+                    </div>
+
 
                     <div class="col-md-6 field-wrap">
                         {{ form.email.label_tag }}

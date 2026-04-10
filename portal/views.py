@@ -115,6 +115,8 @@ def register_student(request):
             email = form.cleaned_data.get("email")
             phone_number = form.cleaned_data.get("phone_number")
             course = form.cleaned_data.get("course")
+            # department = form.cleaned_data.get("department")
+            # institution = form.cleaned_data.get("institution")
             password = form.cleaned_data.get("password")
             national_id = form.cleaned_data.get("national_id")
 
@@ -212,6 +214,36 @@ def student_dashboard(request):
             "applications": applications,
             "notifications": notifications[:5],
             "unread_notifications_count": unread_notifications_count,
+        },
+    )
+
+
+@login_required
+def student_application_tracker(request):
+    try:
+        student_profile = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        return redirect("dashboard_redirect")
+
+    applications = (
+        Application.objects.filter(student=student_profile)
+        .select_related("job", "job__employer")
+        .order_by("-applied_on")
+    )
+
+    status_counts = {
+        "Pending": applications.filter(status="Pending").count(),
+        "Accepted": applications.filter(status="Accepted").count(),
+        "Rejected": applications.filter(status="Rejected").count(),
+    }
+
+    return render(
+        request,
+        "portal/student_application_tracker.html",
+        {
+            "student": student_profile,
+            "applications": applications,
+            "status_counts": status_counts,
         },
     )
 
@@ -590,28 +622,64 @@ def all_applications(request):
     # applications = Application.objects.filter(job__employer=employer).select_related(
     #   "student", "job", "job__employer"
     status_filter = request.GET.get("status", "").strip()
+    institution_filter = request.GET.get("institution", "").strip()
+    department_filter = request.GET.get("department", "").strip()
 
-    applications = (
-        Application.objects.filter(job__employer=employer)
-        .select_related("student", "job", "job__employer")
-        .order_by("-applied_on")
-    )
+    # applications = (
+    #   Application.objects.filter(job__employer=employer)
+    #  .select_related("student", "job", "job__employer")
+    # .order_by("-applied_on")
+    # )
+    applications = _get_employer_applications_queryset(employer)
 
     valid_statuses = {"Pending", "Accepted", "Rejected"}
     if status_filter in valid_statuses:
         applications = applications.filter(status=status_filter)
+    if institution_filter:
+        applications = applications.filter(
+            student__institution__iexact=institution_filter
+        )
+    if department_filter:
+        applications = applications.filter(
+            student__department__iexact=department_filter
+        )
+
+    base_applications = _get_employer_applications_queryset(employer)
+    institution_options = (
+        base_applications.values_list("student__institution", flat=True)
+        .exclude(student__institution="")
+        .distinct()
+        .order_by("student__institution")
+    )
+    department_options = (
+        base_applications.values_list("student__department", flat=True)
+        .exclude(student__department="")
+        .distinct()
+        .order_by("student__department")
+    )
 
     report_rows = [_build_placement_report_row(app) for app in applications]
 
     return render(
         request,
         "portal/all_applications.html",
-        # {"applications": applications, "report_rows": report_rows},
         {
             "applications": applications,
             "report_rows": report_rows,
             "status_filter": status_filter,
+            "institution_filter": institution_filter,
+            "department_filter": department_filter,
+            "institution_options": institution_options,
+            "department_options": department_options,
         },
+    )
+
+
+def _get_employer_applications_queryset(employer):
+    return (
+        Application.objects.filter(job__employer=employer)
+        .select_related("student", "job", "job__employer")
+        .order_by("-applied_on")
     )
 
 
@@ -633,6 +701,7 @@ def _build_placement_report_row(application):
         "student_name": application.student.full_name
         or application.student.user.username,
         "course": application.student.course or "N/A",
+        "department": application.student.department or "N/A",
         "year_of_study": application.student.year_of_study or "N/A",
         "institution": application.student.institution or "N/A",
         "company": application.job.employer.company_name,
@@ -646,9 +715,25 @@ def _build_placement_report_row(application):
 @login_required
 def export_placement_report_csv(request):
     employer = get_object_or_404(Employer, user=request.user)
-    applications = Application.objects.filter(job__employer=employer).select_related(
-        "student", "job", "job__employer"
-    )
+    # applications = Application.objects.filter(job__employer=employer).select_related(
+    #    "student", "job", "job__employer"
+    # )
+    status_filter = request.GET.get("status", "").strip()
+    institution_filter = request.GET.get("institution", "").strip()
+    department_filter = request.GET.get("department", "").strip()
+
+    applications = _get_employer_applications_queryset(employer)
+    valid_statuses = {"Pending", "Accepted", "Rejected"}
+    if status_filter in valid_statuses:
+        applications = applications.filter(status=status_filter)
+    if institution_filter:
+        applications = applications.filter(
+            student__institution__iexact=institution_filter
+        )
+    if department_filter:
+        applications = applications.filter(
+            student__department__iexact=department_filter
+        )
 
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = (
@@ -659,6 +744,7 @@ def export_placement_report_csv(request):
         [
             "Name",
             "Course",
+            "Department",
             "Year of Study",
             "Institution",
             "Company",
@@ -675,6 +761,7 @@ def export_placement_report_csv(request):
             [
                 row["student_name"],
                 row["course"],
+                row["department"],
                 row["year_of_study"],
                 row["institution"],
                 row["company"],

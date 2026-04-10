@@ -28,6 +28,7 @@ class Student(models.Model):
     full_name = models.CharField(max_length=100)
     reg_no = models.CharField(max_length=25, unique=True)
     course = models.CharField(max_length=100)
+    department = models.CharField(max_length=120, blank=True)
     year_of_study = models.CharField(max_length=30, blank=True)
     institution = models.CharField(max_length=150, blank=True)
     email = models.EmailField()

@@ -24,6 +24,8 @@ class StudentRegistrationForm(forms.ModelForm):
             "full_name",
             "reg_no",
             "course",
+            "department",
+            "institution",
             "email",
             "phone_number",
             "national_id",
@@ -33,6 +35,12 @@ class StudentRegistrationForm(forms.ModelForm):
             "full_name": forms.TextInput(attrs={"class": "form-control"}),
             "reg_no": forms.TextInput(attrs={"class": "form-control"}),
             "course": forms.TextInput(attrs={"class": "form-control"}),
+            "department": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "e.g. Computer Science"}
+            ),
+            "institution": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "e.g. Maseno University"}
+            ),
             "email": forms.EmailInput(attrs={"class": "form-control"}),
             "national_id": forms.TextInput(attrs={"class": "form-control"}),
             "phone_number": forms.TextInput(
@@ -49,11 +57,21 @@ class StudentRegistrationForm(forms.ModelForm):
 class StudentProfileForm(forms.ModelForm):
     class Meta:
         model = Student
-        fields = ["full_name", "course", "year_of_study", "institution", "email"]
+        fields = [
+            "full_name",
+            "course",
+            "department",
+            "year_of_study",
+            "institution",
+            "email",
+        ]
 
         widgets = {
             "full_name": forms.TextInput(attrs={"class": "form-control"}),
             "course": forms.TextInput(attrs={"class": "form-control"}),
+            "department": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "e.g. Computer Science"}
+            ),
             "year_of_study": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "e.g. Year 3"}
             ),

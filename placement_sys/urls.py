@@ -74,6 +74,11 @@ urlpatterns = [
     path("dashboard/", views.dashboard_redirect, name="dashboard"),
     path("dashboard/employer/", views.employer_dashboard, name="employer_dashboard"),
     path("dashboard/student/", views.student_dashboard, name="student_dashboard"),
+    path(
+        "dashboard/student/tracker/",
+        views.student_application_tracker,
+        name="student_application_tracker",
+    ),
     path("logout/", auth_views.LogoutView.as_view(next_page="login"), name="logout"),
     path("profile/edit/", views.edit_profile, name="edit_profile"),
     # In urls.py
