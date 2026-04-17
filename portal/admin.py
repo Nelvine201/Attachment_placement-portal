@@ -52,6 +52,7 @@ class ApplicationAdmin(admin.ModelAdmin):
         "employer_company",
         "student_name",
         "course",
+        "department",
         "year_of_study",
         "institution",
         "termination_date",
@@ -60,12 +61,19 @@ class ApplicationAdmin(admin.ModelAdmin):
         "applied_on",
         "insurance_cover_no",
     )
-    list_filter = ("status", "applied_on", "termination_date", "job__employer")
+    list_filter = (
+        "status",
+        "applied_on",
+        "termination_date",
+        "student__department",
+        "job__employer",
+    )
     search_fields = (
         "student__full_name",
         "student__reg_no",
         "student__email",
         "student__institution",
+        "student__department",
         "job__title",
         "job__employer__company_name",
         "insurance_cover_no",
@@ -94,6 +102,10 @@ class ApplicationAdmin(admin.ModelAdmin):
     def employer_company(self, obj):
         return obj.job.employer.company_name
 
+    @admin.display(description="Placed Organization")
+    def placed_organization(self, obj):
+        return obj.job.employer.company_name
+
     @admin.display(description="Student Name")
     def student_name(self, obj):
         return obj.student.full_name or obj.student.user.username
@@ -101,6 +113,10 @@ class ApplicationAdmin(admin.ModelAdmin):
     @admin.display(description="Course")
     def course(self, obj):
         return obj.student.course
+
+    @admin.display(description="Department")
+    def department(self, obj):
+        return obj.student.department or "N/A"
 
     @admin.display(description="Year of Study")
     def year_of_study(self, obj):
@@ -129,7 +145,10 @@ class ApplicationAdmin(admin.ModelAdmin):
         )
 
     def download_full_placement_report_csv(self, request):
-        queryset = Application.objects.select_related("student", "job", "job__employer")
+        changelist = self.get_changelist_instance(request)
+        queryset = changelist.get_queryset(request).select_related(
+            "student", "job", "job__employer"
+        )
         return self._build_csv_response(
             queryset,
             filename="all_applications_full_report.csv",
@@ -149,6 +168,7 @@ class ApplicationAdmin(admin.ModelAdmin):
                 "Student Email",
                 "National ID",
                 "Course",
+                "Department",
                 "Year of Study",
                 "Institution",
                 # "Company",
@@ -182,9 +202,11 @@ class ApplicationAdmin(admin.ModelAdmin):
                     app.student.email,
                     app.student.national_id,
                     app.student.course or "N/A",
+                    app.student.department or "N/A",
                     app.student.year_of_study or "N/A",
                     app.student.institution or "N/A",
                     app.job.title,
+                    app.job.employer.company_name,
                     app.job.employer.company_name,
                     # app.applied_on.date(),
                     app.job.employer.industry or "N/A",
@@ -197,12 +219,13 @@ class ApplicationAdmin(admin.ModelAdmin):
                     app.cover_letter.url if app.cover_letter else "",
                     app.applied_on,
                     app.placement_start_date or "",
+                    app.termination_date or "",
                     (
                         app.placement_duration_days
                         if app.placement_duration_days is not None
                         else ""
                     ),
-                    app.termination_date or "",
+                    # app.termination_date or "",
                     app.status,
                     app.admin_feedback or "",
                 ]
