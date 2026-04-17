@@ -21,7 +21,15 @@ from .forms import JobPostForm
 
 
 def filter_slots(
-    slots, *, active_slots="all", location="", industry="", field_of_study="", intake=""
+    # slots, *, active_slots="all", location="", industry="", field_of_study="", intake=""
+    slots,
+    *,
+    active_slots="all",
+    title="",
+    location="",
+    industry="",
+    field_of_study="",
+    intake="",
 ):
     """Filter placement slots with 5 user-driven parameters."""
     today = timezone.now().date()
@@ -30,6 +38,8 @@ def filter_slots(
         slots = slots.filter(deadline__gte=today)
     elif active_slots == "closed":
         slots = slots.filter(deadline__lt=today)
+    if title:
+        slots = slots.filter(title__icontains=title)
 
     if location:
         slots = slots.filter(location__icontains=location)
@@ -47,7 +57,20 @@ def filter_slots(
 def home(request):
     # This tells Django to look for home.html inside our templates folder
     # return render(request, "home.html")
+    title_filter = request.GET.get("title", "").strip()
+    location_filter = request.GET.get("location", "").strip()
+    industry_filter = request.GET.get("industry", "").strip()
+    field_of_study_filter = request.GET.get("field_of_study", "").strip()
+    intake_filter = request.GET.get("intake", "").strip()
     jobs = JobSlot.objects.select_related("employer").all().order_by("-created_at")
+    filtered_jobs = filter_slots(
+        jobs,
+        title=title_filter,
+        location=location_filter,
+        industry=industry_filter,
+        field_of_study=field_of_study_filter,
+        intake=intake_filter,
+    )
     # active_slots = jobs.filter(deadline__gte=timezone.now().date()).count()
     today = timezone.now().date()
     active_slots = jobs.filter(deadline__gte=today).count()
@@ -60,6 +83,7 @@ def home(request):
         .count()
     )
     trending_jobs = jobs[:8]
+    trending_jobs = filtered_jobs[:8]
     location_options = (
         JobSlot.objects.values_list("location", flat=True)
         .exclude(location="")
@@ -93,6 +117,12 @@ def home(request):
             "industry_options": industry_options,
             "field_of_study_options": field_of_study_options,
             "intake_options": intake_options,
+            "title_filter": title_filter,
+            "location_filter": location_filter,
+            "industry_filter": industry_filter,
+            "field_of_study_filter": field_of_study_filter,
+            "intake_filter": intake_filter,
+            "matching_slots_count": filtered_jobs.count(),
         },
     )
 
@@ -318,6 +348,7 @@ def job_list(request):
     today = timezone.now().date()
     # status_filter = request.GET.get("status", "all")
     active_slots_filter = request.GET.get("status", "all")
+    title_filter = request.GET.get("title", "").strip()
     location_filter = request.GET.get("location", "").strip()
     industry_filter = request.GET.get("industry", "").strip()
     field_of_study_filter = request.GET.get("field_of_study", "").strip()
@@ -334,6 +365,7 @@ def job_list(request):
     jobs = filter_slots(
         jobs,
         active_slots=active_slots_filter,
+        title=title_filter,
         location=location_filter,
         industry=industry_filter,
         field_of_study=field_of_study_filter,
@@ -361,6 +393,7 @@ def job_list(request):
             "applied_job_ids": applied_job_ids,
             "status_filter": active_slots_filter,
             "today": today,
+            "title_filter": title_filter,
             "location_filter": location_filter,
             "industry_filter": industry_filter,
             "field_of_study_filter": field_of_study_filter,

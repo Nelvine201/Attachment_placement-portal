@@ -56,6 +56,25 @@
         background-color: #1D4ED8;
     }
 
+    .hero-search-form {
+        margin-top: 16px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 14px;
+        padding: 16px;
+        backdrop-filter: blur(4px);
+    }
+
+    .hero-search-form .form-label {
+        color: #e5edff;
+        font-weight: 600;
+    }
+
+    .hero-search-form .form-control,
+    .hero-search-form .form-select {
+        border: none;
+    }
+
+
     .about-social-section {
         margin-top: 8px;
     }
@@ -132,11 +151,72 @@
     <div class="hero-main glass-card fade-up">
         <p class="text-uppercase mb-2 fw-semibold">CareerBridge • Explore and discover</p>
         <h1 class="display-5 fw-bold">Explore and discover your ideal placement opportunity.</h1>
-        <p class="mb-0">Quickly jump to all posted slots or view only currently active opportunities.</p>
+        <!--- <p class="mb-0">Quickly jump to all posted slots or view only currently active opportunities.</p>-->
+        <p class="mb-0">Search posted slots by title, location, intake, industry, and field in one place.</p>
         <div class="hero-searchbar">
             <a href="{% url 'jobs' %}?status=all" class="hero-link">All Posted Slots</a>
             <a href="{% url 'jobs' %}?status=active" class="hero-link">Active Slots Only</a>
         </div>
+        <form method="get" class="hero-search-form row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Location</label>
+                <select name="location" class="form-select">
+                    <option value="">Any location</option>
+                    {% for location in location_options %}
+                    <option value="{{ location }}" {% if location in location_filter %}selected{% endif %}>
+                        {{ location }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Industry</label>
+                <select name="industry" class="form-select">
+                    <option value="">Any industry</option>
+                    {% for industry in industry_options %}
+                    <option value="{{ industry }}" {% if industry in industry_filter %}selected{% endif %}>
+                        {{ industry }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Field of Study</label>
+                <select name="field_of_study" class="form-select">
+                    <option value="">Any field</option>
+                    {% for field in field_of_study_options %}
+                    <option value="{{ field }}" {% if field in field_of_study_filter %}selected{% endif %}>
+                        {{ field }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Intake / Duration</label>
+                <select name="intake" class="form-select">
+                    <option value="">Any intake</option>
+                    {% for intake in intake_options %}
+                    <option value="{{ intake }}" {% if intake in intake_filter %}selected{% endif %}>
+                        {{ intake }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-light text-primary fw-semibold">Search on Home</button>
+                <a class="btn btn-outline-light"
+                    href="{% url 'jobs' %}?status=all&title={{ title_filter }}&location={{ location_filter }}&industry={{ industry_filter }}&field_of_study={{ field_of_study_filter }}&intake={{ intake_filter }}">
+                    View Full Results
+                </a>
+            </div>
+            <div class="col-12">
+                <small class="text-light">Matching slots: {{ matching_slots_count }}</small>
+            </div>
+        </form>
 
     </div>
 </section>
