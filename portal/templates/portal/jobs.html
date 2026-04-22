@@ -24,8 +24,9 @@
                         <p>
                             Time left: <span id="countdown-{{ job.id }}"></span>
                         </p>
-                        <a href="{% url 'apply_job' job.id %}" class="btn btn-primary">
-                            Apply Now
+                        <!--- <a href="{% url 'apply_job' job.id %}" class="btn btn-primary">--->
+                        <a href="{% url 'apply_for_job' job.id %}" class="btn btn-primary"></a>
+                        Apply Now
                         </a>
                         {% else %}
                         <button class="btn btn-secondary" disabled>

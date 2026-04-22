@@ -4,6 +4,7 @@ import csv
 from datetime import date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 from .forms import StudentRegistrationForm
 from .forms import JobApplicationForm, StudentProfileForm, EmployerRegistrationForm
 from .models import JobSlot, Application, Student, Employer, Notification
@@ -11,9 +12,11 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.utils import timezone
+from django.utils.html import format_html
 from django.contrib.auth import login, authenticate
 from .forms import ForgotCredentialsForm
-from django.urls import reverse
+
+# from django.urls import reverse
 from django.conf import settings
 from django.http import HttpResponse
 
@@ -417,10 +420,34 @@ def job_list(request):
 
 
 # @login_required(login_url="signup")
-@login_required(login_url="register")
+# @login_required(login_url="register")
 def apply_for_job(request, job_id):
     job = get_object_or_404(JobSlot, id=job_id)
-    student = get_object_or_404(Student, user=request.user)
+    # student = get_object_or_404(Student, user=request.user)
+    if not request.user.is_authenticated:
+        register_link = reverse("register_student")
+        messages.warning(
+            request,
+            format_html(
+                "You haven't registered. You must create an account to apply for this post. "
+                "<a href='{}'>Register as student</a>",
+                register_link,
+            ),
+        )
+        return redirect("jobs")
+
+    student = Student.objects.filter(user=request.user).first()
+    if not student:
+        register_link = reverse("register_student")
+        messages.warning(
+            request,
+            format_html(
+                "You haven't registered. You must create an account to apply for this post. "
+                "<a href='{}'>Register as student</a>",
+                register_link,
+            ),
+        )
+        return redirect("jobs")
 
     if job.deadline < timezone.now().date():
         messages.error(request, "Application deadline has passed.")
