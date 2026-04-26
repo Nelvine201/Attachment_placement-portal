@@ -3,7 +3,8 @@
 {% block content %}
 {% if form.errors %}
 <div class="alert alert-danger">
-    Your username and password didn't match. Please try again.
+    <!--Your username and password didn't match. Please try again.-->
+    Your email/username and password didn't match. Please try again.
 </div>
 {% endif %}
 
@@ -17,8 +18,11 @@
                     <form method="post">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label class="form-label">Username</label>
-                            <input type="text" name="username" class="form-control" required>
+                            <!--<label class="form-label">Username</label>
+                            <input type="text" name="username" class="form-control" required>-->
+                            <label class="form-label">Email or Username</label>
+                            <input type="text" name="username" class="form-control"
+                                placeholder="Student email or employer username" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Password</label>
@@ -42,7 +46,7 @@
                             </a></small>
                     </div>
                     <div class="mt-2 text-center">
-                        <small><a href="{% url 'forgot_credentials' %}">Forgot username or password?</a></small>
+                        <small><a href="{% url 'forgot_credentials' %}">Forgot email/username or password?</a></small>
                     </div>
                 </div>
             </div>

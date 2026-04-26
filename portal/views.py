@@ -145,32 +145,27 @@ def register_student(request):
         if form.is_valid():
             full_name = form.cleaned_data.get("full_name")
             reg_no = form.cleaned_data.get("reg_no")
-            email = form.cleaned_data.get("email")
+            email = form.cleaned_data.get("email").strip().lower()
             phone_number = form.cleaned_data.get("phone_number")
             course = form.cleaned_data.get("course")
-            # department = form.cleaned_data.get("department")
-            # institution = form.cleaned_data.get("institution")
             password = form.cleaned_data.get("password")
             national_id = form.cleaned_data.get("national_id")
 
-            # Check if reg_no already exists
-            if User.objects.filter(username=reg_no).exists():
-                messages.error(
-                    request, "A student with this Registration Number already exists."
-                )
+            if User.objects.filter(username__iexact=email).exists():
+                messages.error(request, "A user with this email already exists.")
                 return render(request, "portal/register.html", {"form": form})
 
-            # Check if national ID already exists
             if Student.objects.filter(national_id=national_id).exists():
                 messages.error(request, "National ID already exists.")
                 return render(request, "portal/register.html", {"form": form})
 
-            # Create login account
+            # --- INDENTED THESE BLOCKS ---
             user = User.objects.create_user(
-                username=reg_no, email=email, password=password
+                username=email,
+                email=email,
+                password=password,
             )
 
-            # Create student profile
             Student.objects.create(
                 user=user,
                 full_name=full_name,
@@ -183,6 +178,7 @@ def register_student(request):
 
             messages.success(request, "Registration successful! Please login.")
             return redirect("login")
+            # -----------------------------
 
     else:
         form = StudentRegistrationForm()
@@ -564,10 +560,21 @@ def login_view(request):
 
     if request.method == "POST":
 
-        username = request.POST.get("username")
+        # username = request.POST.get("username")
+        login_identifier = request.POST.get("username", "").strip()
         password = request.POST.get("password")
 
-        user = authenticate(request, username=username, password=password)
+        # user = authenticate(request, username=username, password=password)
+        user = authenticate(request, username=login_identifier, password=password)
+
+        if user is None and login_identifier:
+            # Allow login using email for accounts whose username differs
+            for candidate in User.objects.filter(email__iexact=login_identifier):
+                user = authenticate(
+                    request, username=candidate.username, password=password
+                )
+                if user is not None:
+                    break
 
         if user is not None:
             login(request, user)
