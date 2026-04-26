@@ -28,8 +28,7 @@
 
 
     .hero-searchbar {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(220px, 1fr));
+        display: flex;
         gap: 10px;
         background: rgba(255, 255, 255, 0.15);
         padding: 12px;
@@ -74,6 +73,23 @@
         border: none;
     }
 
+    .results-grid {
+        margin-top: 18px;
+    }
+
+    .result-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 14px;
+        border: 1px solid rgba(219, 234, 254, 0.85);
+        padding: 14px;
+        color: #0f172a;
+        height: 100%;
+    }
+
+    .result-card .meta {
+        color: #64748b;
+        font-size: 0.9rem;
+    }
 
     .about-social-section {
         margin-top: 8px;
@@ -131,7 +147,7 @@
 
     @media (max-width: 991px) {
         .hero-searchbar {
-            grid-template-columns: 1fr 1fr;
+            flex-wrap: wrap;
         }
 
         .about-card,
@@ -142,7 +158,7 @@
 
     @media (max-width: 640px) {
         .hero-searchbar {
-            grid-template-columns: 1fr;
+            flex-direction: column;
         }
     }
 </style>
@@ -152,14 +168,19 @@
         <p class="text-uppercase mb-2 fw-semibold">CareerBridge • Explore and discover</p>
         <h1 class="display-5 fw-bold">Explore and discover your ideal placement opportunity.</h1>
         <!--- <p class="mb-0">Quickly jump to all posted slots or view only currently active opportunities.</p>-->
-        <p class="mb-0">Search posted slots by title, location, intake, industry, and field in one place.</p>
+        <p class="mb-0">Search posted slots from one place using keyword, location, and industry filters.</p>
         <div class="hero-searchbar">
             <a href="{% url 'jobs' %}?status=all" class="hero-link">Available Opportunities</a>
-            <!--<a href="{% url 'jobs' %}?status=active" class="hero-link">Active Slots Only</a>-->
         </div>
-        <!---- <form method="get" class="hero-search-form row g-3">
+        <form method="get" class="hero-search-form row g-3">
             <div class="col-md-6">
-                <label class="form-label">Location</label>
+                <label class="form-label">Keyword</label>
+                <input type="text" name="keyword" class="form-control" value="{{ keyword_filter }}"
+                    placeholder="Business, technology, agriculture, law, engineering...">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">location</label>
                 <select name="location" class="form-select">
                     <option value="">Any location</option>
                     {% for location in location_options %}
@@ -182,7 +203,7 @@
                 </select>
             </div>
 
-            <div class="col-md-4">
+            <!----  <div class="col-md-4">
                 <label class="form-label">Field of Study</label>
                 <select name="field_of_study" class="form-select">
                     <option value="">Any field</option>
@@ -204,20 +225,41 @@
                     </option>
                     {% endfor %}
                 </select>
-            </div>
+            </div>-->
 
-            <div class="col-12 d-flex gap-2">
+            <!--   <div class="col-12 d-flex gap-2">
                 <button type="submit" class="btn btn-light text-primary fw-semibold">Search on Home</button>
                 <a class="btn btn-outline-light"
                     href="{% url 'jobs' %}?status=all&title={{ title_filter }}&location={{ location_filter }}&industry={{ industry_filter }}&field_of_study={{ field_of_study_filter }}&intake={{ intake_filter }}">
-                    View Full Results
-                </a>
-            </div>
-            <div class="col-12">
-                <small class="text-light">Matching slots: {{ matching_slots_count }}</small>
-            </div>
-        </form>-->
+                    View Full -->
+            <button type="submit" class="btn btn-light text-primary fw-semibold">Filter Slots</button>
+            <a class="btn btn-outline-light" href="{% url 'home' %}">
+                Reset
+            </a>
+    </div>
+    <div class="col-12">
+        <small class="text-light">Matching slots on home page: {{ matching_slots_count }}</small>
+    </div>
+    </form>
 
+    <div class="row results-grid g-3">
+        {% for job in trending_jobs %}
+        <div class="col-md-6 col-xl-4">
+            <div class="result-card">
+                <h6 class="mb-1">{{ job.title }}</h6>
+                <div class="meta mb-2">{{ job.employer.company_name }} • {{ job.location }}</div>
+                <div class="small mb-2"><strong>Industry:</strong> {{ job.employer.industry|default:"Not specified" }}
+                </div>
+                <div class="small mb-2"><strong>Field:</strong> {{ job.field_of_study|default:"Not specified" }}</div>
+                <a href="{% url 'job_detail' job.id %}" class="btn btn-sm btn-primary">View Slot</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-light mb-0">No slots match your current filter on the home page yet.</div>
+        </div>
+        {% endfor %}
+    </div>
     </div>
 </section>
 <section class="home-grid about-social-section">

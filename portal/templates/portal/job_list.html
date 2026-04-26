@@ -54,7 +54,7 @@
         <a href="{% url 'jobs' %}?status=closed"
             class="slot-filter {% if status_filter == 'closed' %}active{% endif %}">Closed Slots</a>
     </div>
-    <form method="get" class="row g-3 mb-4">
+    <!--<form method="get" class="row g-3 mb-4">
         <input type="hidden" name="status" value="{{ status_filter }}">
         <div class="col-md-4">
             <label class="form-label">Title</label>
@@ -104,9 +104,12 @@
             <button type="submit" class="btn btn-primary">Search Slots</button>
             <a href="{% url 'jobs' %}" class="btn btn-outline-secondary">Reset</a>
         </div>
-    </form>
+    </form>-->
 
-
+    <div class="alert alert-info mb-4">
+        Slot search and filtering are now available on the <a href="{% url 'home' %}" class="alert-link">Home page</a>.
+        Use Home filters to narrow by industry, location, and keyword.
+    </div>
 
 
     <div class="row">

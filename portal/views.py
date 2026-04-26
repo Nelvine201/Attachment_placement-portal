@@ -14,6 +14,7 @@ from django.core.mail import send_mail
 from django.utils import timezone
 from django.utils.html import format_html
 from django.contrib.auth import login, authenticate
+from django.db.models import Q
 from .forms import ForgotCredentialsForm
 
 # from django.urls import reverse
@@ -28,6 +29,7 @@ def filter_slots(
     slots,
     *,
     active_slots="all",
+    keyword="",
     title="",
     location="",
     industry="",
@@ -41,6 +43,16 @@ def filter_slots(
         slots = slots.filter(deadline__gte=today)
     elif active_slots == "closed":
         slots = slots.filter(deadline__lt=today)
+    if keyword:
+        slots = slots.filter(
+            Q(title__icontains=keyword)
+            | Q(description__icontains=keyword)
+            | Q(requirements__icontains=keyword)
+            | Q(location__icontains=keyword)
+            | Q(field_of_study__icontains=keyword)
+            | Q(intake__icontains=keyword)
+            | Q(employer__industry__icontains=keyword)
+        )
     if title:
         slots = slots.filter(title__icontains=title)
 
@@ -60,6 +72,7 @@ def filter_slots(
 def home(request):
     # This tells Django to look for home.html inside our templates folder
     # return render(request, "home.html")
+    keyword_filter = request.GET.get("keyword", "").strip()
     title_filter = request.GET.get("title", "").strip()
     location_filter = request.GET.get("location", "").strip()
     industry_filter = request.GET.get("industry", "").strip()
@@ -68,6 +81,7 @@ def home(request):
     jobs = JobSlot.objects.select_related("employer").all().order_by("-created_at")
     filtered_jobs = filter_slots(
         jobs,
+        keyword=keyword_filter,
         title=title_filter,
         location=location_filter,
         industry=industry_filter,
@@ -92,11 +106,24 @@ def home(request):
         .exclude(location="")
         .distinct()
     )
-    industry_options = (
+    industry_options = list(
         Employer.objects.values_list("industry", flat=True)
         .exclude(industry="")
         .distinct()
     )
+    suggested_industries = [
+        "Business",
+        "Technology",
+        "Agriculture",
+        "Law",
+        "Mass Media Communication",
+        "Engineering",
+        "Finance",
+    ]
+    for suggested_industry in suggested_industries:
+        if suggested_industry not in industry_options:
+            industry_options.append(suggested_industry)
+    industry_options = sorted(industry_options)
     field_of_study_options = (
         JobSlot.objects.values_list("field_of_study", flat=True)
         .exclude(field_of_study="")
@@ -120,6 +147,7 @@ def home(request):
             "industry_options": industry_options,
             "field_of_study_options": field_of_study_options,
             "intake_options": intake_options,
+            "keyword_filter": keyword_filter,
             "title_filter": title_filter,
             "location_filter": location_filter,
             "industry_filter": industry_filter,
