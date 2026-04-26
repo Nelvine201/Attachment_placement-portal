@@ -232,7 +232,7 @@
                 <a class="btn btn-outline-light"
                     href="{% url 'jobs' %}?status=all&title={{ title_filter }}&location={{ location_filter }}&industry={{ industry_filter }}&field_of_study={{ field_of_study_filter }}&intake={{ intake_filter }}">
                     View Full -->
-            <button type="submit" class="btn btn-light text-primary fw-semibold">Filter Slots</button>
+            <button type="submit" class="btn btn-light text-primary fw-semibold">Search Slots</button>
             <a class="btn btn-outline-light" href="{% url 'home' %}">
                 Reset
             </a>
@@ -243,6 +243,7 @@
     </form>
 
     <div class="row results-grid g-3">
+        {% if has_active_search %}
         {% for job in trending_jobs %}
         <div class="col-md-6 col-xl-4">
             <div class="result-card">
@@ -250,16 +251,18 @@
                 <div class="meta mb-2">{{ job.employer.company_name }} • {{ job.location }}</div>
                 <div class="small mb-2"><strong>Industry:</strong> {{ job.employer.industry|default:"Not specified" }}
                 </div>
-                <div class="small mb-2"><strong>Field:</strong> {{ job.field_of_study|default:"Not specified" }}</div>
-                <a href="{% url 'job_detail' job.id %}" class="btn btn-sm btn-primary">View Slot</a>
             </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-light mb-0">No match, no available slot.</div>
+            </div>
+            {% endfor %}
+            {% else %}
+
+            <!--<div class="col-12">
+                <div class="alert alert-light mb-0">Use the search filters above to find matching slots.</div>-->
+            {% endif %}
         </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="alert alert-light mb-0">No slots match your current filter on the home page yet.</div>
-        </div>
-        {% endfor %}
-    </div>
     </div>
 </section>
 <section class="home-grid about-social-section">

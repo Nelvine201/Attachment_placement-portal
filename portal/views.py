@@ -78,6 +78,16 @@ def home(request):
     industry_filter = request.GET.get("industry", "").strip()
     field_of_study_filter = request.GET.get("field_of_study", "").strip()
     intake_filter = request.GET.get("intake", "").strip()
+    has_active_search = any(
+        [
+            keyword_filter,
+            title_filter,
+            location_filter,
+            industry_filter,
+            field_of_study_filter,
+            intake_filter,
+        ]
+    )
     jobs = JobSlot.objects.select_related("employer").all().order_by("-created_at")
     filtered_jobs = filter_slots(
         jobs,
@@ -99,8 +109,7 @@ def home(request):
         .distinct()
         .count()
     )
-    trending_jobs = jobs[:8]
-    trending_jobs = filtered_jobs[:8]
+    trending_jobs = filtered_jobs[:8] if has_active_search else JobSlot.objects.none()
     location_options = (
         JobSlot.objects.values_list("location", flat=True)
         .exclude(location="")
@@ -154,6 +163,7 @@ def home(request):
             "field_of_study_filter": field_of_study_filter,
             "intake_filter": intake_filter,
             "matching_slots_count": filtered_jobs.count(),
+            "has_active_search": has_active_search,
         },
     )
 
