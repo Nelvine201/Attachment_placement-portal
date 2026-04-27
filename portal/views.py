@@ -14,7 +14,7 @@ from django.core.mail import send_mail
 from django.utils import timezone
 from django.utils.html import format_html
 from django.contrib.auth import login, authenticate
-from django.db.models import Q
+from django.db.models import Q, Count
 from .forms import ForgotCredentialsForm
 
 # from django.urls import reverse
@@ -72,32 +72,56 @@ def filter_slots(
 def home(request):
     # This tells Django to look for home.html inside our templates folder
     # return render(request, "home.html")
+    valid_categories = ["Internship", "Attachment"]
+    category_filter = request.GET.get("category", "").strip()
+    if category_filter not in valid_categories:
+        category_filter = ""
     keyword_filter = request.GET.get("keyword", "").strip()
-    title_filter = request.GET.get("title", "").strip()
+    # title_filter = request.GET.get("title", "").strip()
     location_filter = request.GET.get("location", "").strip()
     industry_filter = request.GET.get("industry", "").strip()
-    field_of_study_filter = request.GET.get("field_of_study", "").strip()
-    intake_filter = request.GET.get("intake", "").strip()
+    # field_of_study_filter = request.GET.get("field_of_study", "").strip()
+    # intake_filter = request.GET.get("intake", "").strip()
     has_active_search = any(
         [
+            category_filter,
             keyword_filter,
-            title_filter,
+            # title_filter,
             location_filter,
             industry_filter,
-            field_of_study_filter,
-            intake_filter,
+            # field_of_study_filter,
+            # intake_filter,
         ]
     )
     jobs = JobSlot.objects.select_related("employer").all().order_by("-created_at")
-    filtered_jobs = filter_slots(
-        jobs,
-        keyword=keyword_filter,
-        title=title_filter,
-        location=location_filter,
-        industry=industry_filter,
-        field_of_study=field_of_study_filter,
-        intake=intake_filter,
-    )
+    # filtered_jobs = filter_slots(
+    #   jobs,
+    #  keyword=keyword_filter,
+    # title=title_filter,
+    # location=location_filter,
+    # industry=industry_filter,
+    # field_of_study=field_of_study_filter,
+    # intake=intake_filter,
+    # )
+    exact_filters = Q()
+    if category_filter == "Internship":
+        exact_filters &= Q(title__icontains="intern")
+    elif category_filter == "Attachment":
+        exact_filters &= Q(title__icontains="attachment")
+    if location_filter:
+        exact_filters &= Q(location__iexact=location_filter)
+    if industry_filter:
+        exact_filters &= Q(employer__industry__iexact=industry_filter) | Q(
+            field_of_study__iexact=industry_filter
+        )
+
+    filtered_jobs = jobs.filter(exact_filters)
+    if keyword_filter:
+        filtered_jobs = filtered_jobs.filter(
+            Q(title__icontains=keyword_filter)
+            | Q(description__icontains=keyword_filter)
+            | Q(requirements__icontains=keyword_filter)
+        )
     # active_slots = jobs.filter(deadline__gte=timezone.now().date()).count()
     today = timezone.now().date()
     active_slots = jobs.filter(deadline__gte=today).count()
@@ -115,32 +139,54 @@ def home(request):
         .exclude(location="")
         .distinct()
     )
-    industry_options = list(
-        Employer.objects.values_list("industry", flat=True)
-        .exclude(industry="")
+    # industry_options = list(
+    #   Employer.objects.values_list("industry", flat=True)
+    #  .exclude(industry="")
+    industry_values = set(
+        JobSlot.objects.values_list("employer__industry", flat=True)
+        .exclude(employer__industry="")
         .distinct()
     )
-    suggested_industries = [
-        "Business",
-        "Technology",
-        "Agriculture",
-        "Law",
-        "Mass Media Communication",
-        "Engineering",
-        "Finance",
-    ]
-    for suggested_industry in suggested_industries:
-        if suggested_industry not in industry_options:
-            industry_options.append(suggested_industry)
-    industry_options = sorted(industry_options)
-    field_of_study_options = (
+    field_values = set(
         JobSlot.objects.values_list("field_of_study", flat=True)
         .exclude(field_of_study="")
         .distinct()
     )
-    intake_options = (
-        JobSlot.objects.values_list("intake", flat=True).exclude(intake="").distinct()
-    )
+    # intake_options = (
+    #    JobSlot.objects.values_list("intake", flat=True).exclude(intake="").distinct()
+    # )
+    industry_options = sorted(industry_values | field_values)
+
+    related_field_map = {
+        "Finance": ["Accounting", "Business Administration", "Economics"],
+        "Law": ["Compliance", "Public Policy", "Criminology"],
+        "Human Resources": ["Industrial Psychology", "Business Administration"],
+        "Engineering": ["Information Technology", "Project Management", "Technology"],
+        "Agriculture": ["Agribusiness", "Environmental Science", "Food Science"],
+        "Mass Media": ["Communication", "Public Relations", "Journalism"],
+    }
+    related_suggestions = []
+    if industry_filter:
+        related_suggestions.extend(related_field_map.get(industry_filter, []))
+
+        popular_fields = (
+            JobSlot.objects.filter(
+                Q(employer__industry__iexact=industry_filter)
+                | Q(field_of_study__iexact=industry_filter)
+            )
+            .exclude(field_of_study="")
+            .values("field_of_study")
+            .annotate(total=Count("id"))
+            .order_by("-total")[:5]
+        )
+        related_suggestions.extend(
+            [
+                field["field_of_study"]
+                for field in popular_fields
+                if field["field_of_study"]
+            ]
+        )
+    related_suggestions = list(dict.fromkeys(related_suggestions))
 
     return render(
         request,
@@ -152,16 +198,19 @@ def home(request):
             "closed_slots": closed_slots,
             "companies_hiring": companies_hiring,
             "today": today,
+            "category_options": valid_categories,
+            "category_filter": category_filter,
             "location_options": location_options,
             "industry_options": industry_options,
-            "field_of_study_options": field_of_study_options,
-            "intake_options": intake_options,
+            # "field_of_study_options": field_of_study_options,
+            # "intake_options": intake_options,
             "keyword_filter": keyword_filter,
-            "title_filter": title_filter,
+            # "title_filter": title_filter,
             "location_filter": location_filter,
             "industry_filter": industry_filter,
-            "field_of_study_filter": field_of_study_filter,
-            "intake_filter": intake_filter,
+            # "field_of_study_filter": field_of_study_filter,
+            # "intake_filter": intake_filter,
+            "related_suggestions": related_suggestions,
             "matching_slots_count": filtered_jobs.count(),
             "has_active_search": has_active_search,
         },

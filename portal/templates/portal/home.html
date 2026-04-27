@@ -173,13 +173,25 @@
             <a href="{% url 'jobs' %}?status=all" class="hero-link">Available Opportunities</a>
         </div>
         <form method="get" class="hero-search-form row g-3">
-            <div class="col-md-6">
+            <!-- <div class="col-md-6">-->
+            <div class="col-md-3">
+                <label class="form-label">Category</label>
+                <select name="category" class="form-select">
+                    <option value="">All categories</option>
+                    {% for category in category_options %}
+                    <option value="{{ category }}" {% if category in category_filter %}selected{% endif %}>
+                        {{ category }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-5">
                 <label class="form-label">Keyword</label>
                 <input type="text" name="keyword" class="form-control" value="{{ keyword_filter }}"
                     placeholder="Business, technology, agriculture, law, engineering...">
             </div>
-
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label class="form-label">location</label>
                 <select name="location" class="form-select">
                     <option value="">Any location</option>
@@ -236,34 +248,33 @@
             <a class="btn btn-outline-light" href="{% url 'home' %}">
                 Reset
             </a>
-    </div>
-    <div class="col-12">
-        <small class="text-light">Matching slots on home page: {{ matching_slots_count }}</small>
-    </div>
-    </form>
+        </form>
+        <div class="row results-grid g-3">
 
-    <div class="row results-grid g-3">
-        {% if has_active_search %}
-        {% for job in trending_jobs %}
-        <div class="col-md-6 col-xl-4">
-            <div class="result-card">
-                <h6 class="mb-1">{{ job.title }}</h6>
-                <div class="meta mb-2">{{ job.employer.company_name }} • {{ job.location }}</div>
-                <div class="small mb-2"><strong>Industry:</strong> {{ job.employer.industry|default:"Not specified" }}
+
+            <div class="row results-grid g-3">
+                {% if has_active_search %}
+                {% for job in trending_jobs %}
+                <div class="col-md-6 col-xl-4">
+                    <div class="result-card">
+                        <h6 class="mb-1">{{ job.title }}</h6>
+                        <div class="meta mb-2">{{ job.employer.company_name }} • {{ job.location }}</div>
+                        <div class="small mb-2"><strong>Industry:</strong> {{ job.employer.industry|default:"Not
+                            specified" }}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-light mb-0">No match, no available slot.</div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+
+                    <!--<div class="col-12">
+                <div class="alert alert-light mb-0">Use the search filters above to find matching slots.</div>-->
+                    {% endif %}
                 </div>
             </div>
-            {% empty %}
-            <div class="col-12">
-                <div class="alert alert-light mb-0">No match, no available slot.</div>
-            </div>
-            {% endfor %}
-            {% else %}
-
-            <!--<div class="col-12">
-                <div class="alert alert-light mb-0">Use the search filters above to find matching slots.</div>-->
-            {% endif %}
-        </div>
-    </div>
 </section>
 <section class="home-grid about-social-section">
     <div class="about-card glass-card fade-up">
