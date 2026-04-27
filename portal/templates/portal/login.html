@@ -3,54 +3,52 @@
 {% block content %}
 {% if form.errors %}
 <div class="alert alert-danger">
-    <!--Your username and password didn't match. Please try again.-->
     Your email/username and password didn't match. Please try again.
 </div>
 {% endif %}
 
 <form method="post">
     {% csrf_token %}
+    {% if next %}
+    <input type="hidden" name="next" value="{{ next }}">
+    {% endif %}
     <div class="row justify-content-center">
         <div class="col-md-4">
             <div class="card shadow">
                 <div class="card-body">
                     <h3 class="text-center mb-4">Sign in</h3>
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <!--<label class="form-label">Username</label>
-                            <input type="text" name="username" class="form-control" required>-->
-                            <label class="form-label">Email or Username</label>
-                            <input type="text" name="username" class="form-control"
-                                placeholder="Student email or employer username" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Password</label>
-
-                            <div class="input-group">
-                                <input type="password" id="login_password" name="password" class="form-control"
-                                    required>
-
-                                <button type="button" class="btn btn-outline-secondary"
-                                    onclick="togglePassword('login_password', this)">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                            </div>
-
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Login</button>
-                    </form>
-                    <div class="mt-3 text-center">
-                        <small>Don't have an account? <a href="{% url 'register_choice' %}">
-                                Create Account
-                            </a></small>
+                    <div class="mb-3">
+                        <label class="form-label">Email or Username</label>
+                        <input type="text" name="username" class="form-control" placeholder="Student email or username"
+                            required>
                     </div>
-                    <div class="mt-2 text-center">
-                        <small><a href="{% url 'forgot_credentials' %}">Forgot email/username or password?</a></small>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <div class="input-group">
+                            <input type="password" id="login_password" name="password" class="form-control" required>
+
+                            <button type="button" class="btn btn-outline-secondary"
+                                onclick="togglePassword('login_password', this)">
+                                <i class="bi bi-eye"></i>
+                            </button>
+
+                        </div><br>
+                        <button class="btn btn-primary w-100">Login</button>
+                        <!----  <button type="submit" class= </form>-->
+                        <div class="mt-3 text-center">
+                            <!-- <small>Don't have an account? <a href="{% url 'register_choice' %}">
+                                Create Account
+                            </a></small>-->
+                            <small>Don't have an account? <a href="{% url 'register_choice' %}">Create
+                                    Account</a></small>
+                        </div>
+                        <div class="mt-2 text-center">
+                            <small><a href="{% url 'forgot_credentials' %}">Forgot email/username or
+                                    password?</a></small>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div>
+                <!--- <div>
             </div>
             <script>
                 function togglePassword(inputId, button) {
@@ -64,6 +62,23 @@
                         icon.className = 'bi bi-eye';
                     }
                 }
-            </script>
+            </script>-->
+            </div>
+        </div>
+</form>
 
-            {% endblock %}
+<script>
+    function togglePassword(inputId, button) {
+        const input = document.getElementById(inputId);
+        const icon = button.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'bi bi-eye-slash';
+        } else {
+            input.type = 'password';
+            icon.className = 'bi bi-eye';
+        }
+    }
+</script>
+
+{% endblock %}

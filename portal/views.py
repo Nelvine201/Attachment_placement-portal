@@ -1,6 +1,7 @@
 # from django.shortcuts import render
 
 import csv
+from urllib.parse import urlencode
 from datetime import date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -410,16 +411,9 @@ def apply_for_job(request, job_id):
     job = get_object_or_404(JobSlot, id=job_id)
     # student = get_object_or_404(Student, user=request.user)
     if not request.user.is_authenticated:
-        register_link = reverse("register_student")
-        messages.warning(
-            request,
-            format_html(
-                "You haven't registered. You must create an account to apply for this post. "
-                "<a href='{}'>Register as student</a>",
-                register_link,
-            ),
-        )
-        return redirect("jobs")
+        login_url = f"{reverse('login')}?{urlencode({'next': reverse('job_detail', args=[job.id])})}"
+        messages.warning(request, "Please log in to apply for this opportunity.")
+        return redirect(login_url)
 
     student = Student.objects.filter(user=request.user).first()
     if not student:
