@@ -70,44 +70,13 @@ def filter_slots(
 
 # Create your views here.
 def home(request):
-    valid_categories = ["Internship", "Attachment"]
-    today = timezone.now().date()
-    category_filter = request.GET.get("category", "").strip()
-    if category_filter not in valid_categories:
-        category_filter = ""
-    keyword_filter = request.GET.get("keyword", "").strip()
-    location_filter = request.GET.get("location", "").strip()
-    industry_filter = request.GET.get("industry", "").strip()
 
-    has_active_search = any(
-        [category_filter, keyword_filter, location_filter, industry_filter]
-    )
+    today = timezone.now().date()
     jobs = JobSlot.objects.select_related("employer").order_by("-created_at")
     active_jobs = jobs.filter(deadline__gte=today)
-
-    filters = Q()
-
-    if category_filter == "Internship":
-        filters &= Q(title__icontains="intern")
-    elif category_filter == "Attachment":
-        filters &= Q(title__icontains="attachment")
-    if location_filter:
-        filters &= Q(location__iexact=location_filter)
-    if industry_filter:
-        filters &= Q(employer__industry__iexact=industry_filter)
-
-    if keyword_filter:
-        filters &= (
-            Q(title__icontains=keyword_filter)
-            | Q(description__icontains=keyword_filter)
-            | Q(requirements__icontains=keyword_filter)
-        )
-    filtered_jobs = active_jobs.filter(filters)
-
     active_slots = active_jobs.count()
     closed_slots = jobs.filter(deadline__lt=today).count()
     companies_hiring = active_jobs.values("employer_id").distinct().count()
-    trending_jobs = filtered_jobs[:8] if has_active_search else JobSlot.objects.none()
     location_options = list(
         active_jobs.exclude(location="")
         .values_list("location", flat=True)
@@ -125,23 +94,12 @@ def home(request):
         "home.html",
         {
             "jobs": jobs,
-            "trending_jobs": trending_jobs,
             "active_slots": active_slots,
             "closed_slots": closed_slots,
             "companies_hiring": companies_hiring,
             "today": today,
-            "category_options": valid_categories,
-            "category_filter": category_filter,
             "location_options": location_options,
             "industry_options": industry_options,
-            # "field_of_study_options": field_of_study_options,
-            # "intake_options": intake_options,
-            "keyword_filter": keyword_filter,
-            # "title_filter": title_filter,
-            "location_filter": location_filter,
-            "industry_filter": industry_filter,
-            "matching_slots_count": filtered_jobs.count(),
-            "has_active_search": has_active_search,
         },
     )
 
@@ -359,9 +317,7 @@ def employer_dashboard(request):
 
 # @login_required
 def job_list(request):
-    # jobs = JobSlot.objects.all()
     today = timezone.now().date()
-    # status_filter = request.GET.get("status", "all")
     active_slots_filter = request.GET.get("status", "all")
     title_filter = request.GET.get("title", "").strip()
     location_filter = request.GET.get("location", "").strip()
@@ -369,23 +325,39 @@ def job_list(request):
     field_of_study_filter = request.GET.get("field_of_study", "").strip()
     intake_filter = request.GET.get("intake", "").strip()
 
-    # jobs = JobSlot.objects.all().order_by("-created_at")
-    # if status_filter == "active":
-    #   jobs = jobs.filter(deadline__gte=today)
-    # elif status_filter == "closed":
-    #   jobs = jobs.filter(deadline__lt=today)
-
-    # Default value
+    # 1. Initialize the base queryset
     jobs = JobSlot.objects.select_related("employer").all().order_by("-created_at")
-    jobs = filter_slots(
-        jobs,
-        active_slots=active_slots_filter,
-        title=title_filter,
-        location=location_filter,
-        industry=industry_filter,
-        field_of_study=field_of_study_filter,
-        intake=intake_filter,
-    )
+
+    # 2. Filter by status
+    jobs = filter_slots(jobs, active_slots=active_slots_filter)
+
+    # 3. Filter by other fields if they exist
+    if any(
+        [
+            title_filter,
+            location_filter,
+            industry_filter,
+            field_of_study_filter,
+            intake_filter,
+        ]
+    ):
+        jobs = filter_slots(
+            jobs,
+            title=title_filter,
+            location=location_filter,
+            industry=industry_filter,
+            field_of_study=field_of_study_filter,
+            intake=intake_filter,
+        )
+
+    # slot_results = [
+    #   {
+    #      "id": job.id,
+    #     "title": job.title,
+    #    "detail_url": reverse("job_detail", args=[job.id]),
+    # }
+    # for job in jobs_queryset
+    # ]
     applied_job_ids = []
 
     # If user is logged in, check applications
@@ -405,6 +377,7 @@ def job_list(request):
         "portal/job_list.html",
         {
             "jobs": jobs,
+            # "slot_results": slot_results,
             "applied_job_ids": applied_job_ids,
             "status_filter": active_slots_filter,
             "today": today,

@@ -73,6 +73,17 @@
         border: none;
     }
 
+    .search-icon-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        padding: 0;
+    }
+
     .results-grid {
         margin-top: 18px;
     }
@@ -168,29 +179,13 @@
         <p class="text-uppercase mb-2 fw-semibold">CareerBridge • Explore and discover</p>
         <h1 class="display-5 fw-bold">Explore and discover your ideal placement opportunity.</h1>
         <!--- <p class="mb-0">Quickly jump to all posted slots or view only currently active opportunities.</p>-->
-        <p class="mb-0">Search posted slots from one place using keyword, location, and industry filters.</p>
+        <p class="mb-0">Search posted slots from one place.</p>
         <div class="hero-searchbar">
             <a href="{% url 'jobs' %}?status=all" class="hero-link">Available Opportunities</a>
         </div>
-        <form method="get" class="hero-search-form row g-3">
-            <!-- <div class="col-md-6">-->
-            <!----   <div class="col-md-3">
-                <label class="form-label">Category</label>
-                <select name="category" class="form-select">
-                    <option value="">All categories</option>
-                    {% for category in category_options %}
-                    <option value="{{ category }}" {% if category in category_filter %}selected{% endif %}>
-                        {{ category }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
+        <form method="get" action="{% url 'jobs' %}" class="hero-search-form row g-3 align-items-end">
+            <input type="hidden" name="status" value="all">
 
-            <div class="col-md-5">
-                <label class="form-label">Keyword</label>
-                <input type="text" name="keyword" class="form-control" value="{{ keyword_filter }}"
-                    placeholder="Business, technology, agriculture, law, engineering...">
-            </div>-->
             <div class="col-md-4">
                 <label class="form-label">Industry</label>
                 <select name="industry" class="form-select">
@@ -215,67 +210,18 @@
             </div>
 
 
-
-            <!----  <div class="col-md-4">
-                <label class="form-label">Field of Study</label>
-                <select name="field_of_study" class="form-select">
-                    <option value="">Any field</option>
-                    {% for field in field_of_study_options %}
-                    <option value="{{ field }}" {% if field in field_of_study_filter %}selected{% endif %}>
-                        {{ field }}
-                    </option>
-                    {% endfor %}
-                </select>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-light text-primary fw-semibold search-icon-btn"
+                    aria-label="Search slots">🔍</button>
             </div>
-
-            <div class="col-md-4">
-                <label class="form-label">Intake / Duration</label>
-                <select name="intake" class="form-select">
-                    <option value="">Any intake</option>
-                    {% for intake in intake_options %}
-                    <option value="{{ intake }}" {% if intake in intake_filter %}selected{% endif %}>
-                        {{ intake }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>-->
-
-            <!--   <div class="col-12 d-flex gap-2">
-                <button type="submit" class="btn btn-light text-primary fw-semibold">Search on Home</button>
-                <a class="btn btn-outline-light"
-                    href="{% url 'jobs' %}?status=all&title={{ title_filter }}&location={{ location_filter }}&industry={{ industry_filter }}&field_of_study={{ field_of_study_filter }}&intake={{ intake_filter }}">
-                    View Full -->
-            <button type="submit" class="btn btn-light text-primary fw-semibold">Search Slots</button>
-            <a class="btn btn-outline-light" href="{% url 'home' %}">
-                Reset
-            </a>
+            <div class="col-auto">
+                <a class="btn btn-outline-light" href="{% url 'home' %}">
+                    Reset
+                </a>
+            </div>
         </form>
-        <div class="row results-grid g-3">
-
-
-            <div class="row results-grid g-3">
-                {% if has_active_search %}
-                {% for job in trending_jobs %}
-                <div class="col-md-6 col-xl-4">
-                    <div class="result-card">
-                        <h6 class="mb-1">{{ job.title }}</h6>
-                        <div class="meta mb-2">{{ job.employer.company_name }} • {{ job.location }}</div>
-                        <div class="small mb-2"><strong>Industry:</strong> {{ job.employer.industry|default:"Not
-                            specified" }}
-                        </div>
-                    </div>
-                    {% empty %}
-                    <div class="col-12">
-                        <div class="alert alert-light mb-0">No available slot.</div>
-                    </div>
-                    {% endfor %}
-                    {% else %}
-
-                    <!--<div class="col-12">
-                <div class="alert alert-light mb-0">Use the search filters above to find matching slots.</div>-->
-                    {% endif %}
-                </div>
-            </div>
+        <p class="mt-3 mb-0 small text-light">Use filters then tap 🔍 to view matching results on the opportunities
+            page.</p>
 </section>
 <section class="home-grid about-social-section">
     <div class="about-card glass-card fade-up">
