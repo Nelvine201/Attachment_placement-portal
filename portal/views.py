@@ -14,7 +14,7 @@ from django.core.mail import send_mail
 from django.utils import timezone
 from django.utils.html import format_html
 from django.contrib.auth import login, authenticate
-from django.db.models import Q, Count
+from django.db.models import Q
 from .forms import ForgotCredentialsForm
 
 # from django.urls import reverse
@@ -70,124 +70,56 @@ def filter_slots(
 
 # Create your views here.
 def home(request):
-    # This tells Django to look for home.html inside our templates folder
-    # return render(request, "home.html")
     valid_categories = ["Internship", "Attachment"]
+    today = timezone.now().date()
     category_filter = request.GET.get("category", "").strip()
     if category_filter not in valid_categories:
         category_filter = ""
     keyword_filter = request.GET.get("keyword", "").strip()
-    # title_filter = request.GET.get("title", "").strip()
     location_filter = request.GET.get("location", "").strip()
     industry_filter = request.GET.get("industry", "").strip()
-    # field_of_study_filter = request.GET.get("field_of_study", "").strip()
-    # intake_filter = request.GET.get("intake", "").strip()
-    has_active_search = any(
-        [
-            category_filter,
-            keyword_filter,
-            # title_filter,
-            location_filter,
-            industry_filter,
-            # field_of_study_filter,
-            # intake_filter,
-        ]
-    )
-    jobs = JobSlot.objects.select_related("employer").all().order_by("-created_at")
-    # filtered_jobs = filter_slots(
-    #   jobs,
-    #  keyword=keyword_filter,
-    # title=title_filter,
-    # location=location_filter,
-    # industry=industry_filter,
-    # field_of_study=field_of_study_filter,
-    # intake=intake_filter,
-    # )
-    exact_filters = Q()
-    if category_filter == "Internship":
-        exact_filters &= Q(title__icontains="intern")
-    elif category_filter == "Attachment":
-        exact_filters &= Q(title__icontains="attachment")
-    if location_filter:
-        exact_filters &= Q(location__iexact=location_filter)
-    if industry_filter:
-        exact_filters &= Q(employer__industry__iexact=industry_filter) | Q(
-            field_of_study__iexact=industry_filter
-        )
 
-    filtered_jobs = jobs.filter(exact_filters)
+    has_active_search = any(
+        [category_filter, keyword_filter, location_filter, industry_filter]
+    )
+    jobs = JobSlot.objects.select_related("employer").order_by("-created_at")
+    active_jobs = jobs.filter(deadline__gte=today)
+
+    filters = Q()
+
+    if category_filter == "Internship":
+        filters &= Q(title__icontains="intern")
+    elif category_filter == "Attachment":
+        filters &= Q(title__icontains="attachment")
+    if location_filter:
+        filters &= Q(location__iexact=location_filter)
+    if industry_filter:
+        filters &= Q(employer__industry__iexact=industry_filter)
+
     if keyword_filter:
-        filtered_jobs = filtered_jobs.filter(
+        filters &= (
             Q(title__icontains=keyword_filter)
             | Q(description__icontains=keyword_filter)
             | Q(requirements__icontains=keyword_filter)
         )
-    # active_slots = jobs.filter(deadline__gte=timezone.now().date()).count()
-    today = timezone.now().date()
-    active_slots = jobs.filter(deadline__gte=today).count()
+    filtered_jobs = active_jobs.filter(filters)
+
+    active_slots = active_jobs.count()
     closed_slots = jobs.filter(deadline__lt=today).count()
-    companies_hiring = (
-        # jobs.filter(deadline__gte=timezone.now().date())
-        jobs.filter(deadline__gte=today)
-        .values("employer_id")
-        .distinct()
-        .count()
-    )
+    companies_hiring = active_jobs.values("employer_id").distinct().count()
     trending_jobs = filtered_jobs[:8] if has_active_search else JobSlot.objects.none()
-    location_options = (
-        JobSlot.objects.values_list("location", flat=True)
-        .exclude(location="")
+    location_options = list(
+        active_jobs.exclude(location="")
+        .values_list("location", flat=True)
         .distinct()
+        .order_by("location")
     )
-    # industry_options = list(
-    #   Employer.objects.values_list("industry", flat=True)
-    #  .exclude(industry="")
-    industry_values = set(
-        JobSlot.objects.values_list("employer__industry", flat=True)
-        .exclude(employer__industry="")
+    industry_options = list(
+        active_jobs.exclude(employer__industry="")
+        .values_list("employer__industry", flat=True)
         .distinct()
+        .order_by("employer__industry")
     )
-    field_values = set(
-        JobSlot.objects.values_list("field_of_study", flat=True)
-        .exclude(field_of_study="")
-        .distinct()
-    )
-    # intake_options = (
-    #    JobSlot.objects.values_list("intake", flat=True).exclude(intake="").distinct()
-    # )
-    industry_options = sorted(industry_values | field_values)
-
-    related_field_map = {
-        "Finance": ["Accounting", "Business Administration", "Economics"],
-        "Law": ["Compliance", "Public Policy", "Criminology"],
-        "Human Resources": ["Industrial Psychology", "Business Administration"],
-        "Engineering": ["Information Technology", "Project Management", "Technology"],
-        "Agriculture": ["Agribusiness", "Environmental Science", "Food Science"],
-        "Mass Media": ["Communication", "Public Relations", "Journalism"],
-    }
-    related_suggestions = []
-    if industry_filter:
-        related_suggestions.extend(related_field_map.get(industry_filter, []))
-
-        popular_fields = (
-            JobSlot.objects.filter(
-                Q(employer__industry__iexact=industry_filter)
-                | Q(field_of_study__iexact=industry_filter)
-            )
-            .exclude(field_of_study="")
-            .values("field_of_study")
-            .annotate(total=Count("id"))
-            .order_by("-total")[:5]
-        )
-        related_suggestions.extend(
-            [
-                field["field_of_study"]
-                for field in popular_fields
-                if field["field_of_study"]
-            ]
-        )
-    related_suggestions = list(dict.fromkeys(related_suggestions))
-
     return render(
         request,
         "home.html",
@@ -208,9 +140,6 @@ def home(request):
             # "title_filter": title_filter,
             "location_filter": location_filter,
             "industry_filter": industry_filter,
-            # "field_of_study_filter": field_of_study_filter,
-            # "intake_filter": intake_filter,
-            "related_suggestions": related_suggestions,
             "matching_slots_count": filtered_jobs.count(),
             "has_active_search": has_active_search,
         },

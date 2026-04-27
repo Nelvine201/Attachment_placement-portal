@@ -174,7 +174,7 @@
         </div>
         <form method="get" class="hero-search-form row g-3">
             <!-- <div class="col-md-6">-->
-            <div class="col-md-3">
+            <!----   <div class="col-md-3">
                 <label class="form-label">Category</label>
                 <select name="category" class="form-select">
                     <option value="">All categories</option>
@@ -190,19 +190,7 @@
                 <label class="form-label">Keyword</label>
                 <input type="text" name="keyword" class="form-control" value="{{ keyword_filter }}"
                     placeholder="Business, technology, agriculture, law, engineering...">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">location</label>
-                <select name="location" class="form-select">
-                    <option value="">Any location</option>
-                    {% for location in location_options %}
-                    <option value="{{ location }}" {% if location in location_filter %}selected{% endif %}>
-                        {{ location }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-
+            </div>-->
             <div class="col-md-4">
                 <label class="form-label">Industry</label>
                 <select name="industry" class="form-select">
@@ -214,6 +202,19 @@
                     {% endfor %}
                 </select>
             </div>
+            <div class="col-md-4">
+                <label class="form-label">Location</label>
+                <select name="location" class="form-select">
+                    <option value="">Any location</option>
+                    {% for location in location_options %}
+                    <option value="{{ location }}" {% if location in location_filter %}selected{% endif %}>
+                        {{ location }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+
 
             <!----  <div class="col-md-4">
                 <label class="form-label">Field of Study</label>
@@ -265,7 +266,7 @@
                     </div>
                     {% empty %}
                     <div class="col-12">
-                        <div class="alert alert-light mb-0">No match, no available slot.</div>
+                        <div class="alert alert-light mb-0">No available slot.</div>
                     </div>
                     {% endfor %}
                     {% else %}
