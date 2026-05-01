@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        @page {
+            size: A4;
+            margin: 22mm 16mm;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: #1d2630;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin: 0;
+        }
+
+        .header {
+            border-bottom: 2px solid #183b56;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .title {
+            font-size: 23px;
+            color: #102a43;
+            margin-bottom: 2px;
+        }
+
+        .subtitle {
+            color: #486581;
+            font-size: 12px;
+        }
+
+        .filters {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #334e68;
+        }
+
+        .summary {
+            margin: 16px 0;
+            border: 1px solid #d9e2ec;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .summary th,
+        .summary td {
+            border: 1px solid #d9e2ec;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .summary th {
+            background: #f0f4f8;
+            color: #243b53;
+            width: 30%;
+        }
+
+        .charts {
+            margin-top: 14px;
+        }
+
+        .chart-block {
+            margin-bottom: 14px;
+            border: 1px solid #d9e2ec;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            color: #102a43;
+            margin-bottom: 8px;
+        }
+
+        .chart-img {
+            width: 100%;
+            max-height: 340px;
+            object-fit: contain;
+        }
+
+        .section-title {
+            margin: 20px 0 8px;
+            color: #102a43;
+            font-size: 15px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+
+        .data-table th,
+        .data-table td {
+            border: 1px solid #d9e2ec;
+            padding: 5px;
+            vertical-align: top;
+        }
+
+        .data-table th {
+            background-color: #f0f4f8;
+            color: #243b53;
+        }
+
+        .badge {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 9px;
+            color: #fff;
+            display: inline-block;
+        }
+
+        .pending {
+            background: #dba408;
+        }
+
+        .accepted {
+            background: #2f855a;
+        }
+
+        .rejected {
+            background: #c53030;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1 class="title">Employer Placement Tracking Report</h1>
+        <div class="subtitle">{{ employer.company_name }} • Generated on {{ generated_on|date:"d M Y H:i" }}</div>
+        <div class="filters">
+            {% if active_filter_labels %}
+            <strong>Applied filters:</strong> {{ active_filter_labels|join:", " }}
+            {% else %}
+            <strong>Applied filters:</strong> None
+            {% endif %}
+        </div>
+    </div>
+
+    <table class="summary">
+        <tr>
+            <th>Total Applications</th>
+            <td>{{ summary.total }}</td>
+            <th>Pending</th>
+            <td>{{ summary.pending }}</td>
+        </tr>
+        <tr>
+            <th>Accepted</th>
+            <td>{{ summary.accepted }}</td>
+            <th>Rejected</th>
+            <td>{{ summary.rejected }}</td>
+        </tr>
+    </table>
+
+    <div class="charts">
+        {% if charts.applications_per_post %}
+        <div class="chart-block">
+            <h3 class="chart-title">Applications Per Post</h3>
+            <img class="chart-img" src="{{ charts.applications_per_post }}" alt="Applications per post chart" />
+        </div>
+        {% endif %}
+
+        {% if charts.institution_mix %}
+        <div class="chart-block">
+            <h3 class="chart-title">Student Institution Distribution</h3>
+            <img class="chart-img" src="{{ charts.institution_mix }}" alt="Institution distribution chart" />
+        </div>
+        {% endif %}
+    </div>
+
+    <h2 class="section-title">Filtered Application Details</h2>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Course</th>
+                <th>Department</th>
+                <th>Institution</th>
+                <th>Date Applied</th>
+                <th>Status</th>
+                <th>Duration</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in report_rows %}
+            <tr>
+                <td>{{ row.student_name }}</td>
+                <td>{{ row.course }}</td>
+                <td>{{ row.department }}</td>
+                <td>{{ row.institution }}</td>
+                <td>{{ row.date_applied|date:"d M Y" }}</td>
+                <td>
+                    <span
+                        class="badge {% if row.status == 'Pending' %}pending{% elif row.status == 'Accepted' %}accepted{% else %}rejected{% endif %}">
+                        {{ row.status }}
+                    </span>
+                </td>
+                <td>{{ row.duration }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">No applications matched the selected filters.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+</html>

@@ -106,6 +106,16 @@ urlpatterns = [
         views.export_placement_report_csv,
         name="export_placement_report_csv",
     ),
+    path(
+        "dashboard/applications/report/preview/",
+        views.placement_report_pdf_preview,
+        name="placement_report_pdf_preview",
+    ),
+    path(
+        "dashboard/applications/report/pdf/",
+        views.placement_report_pdf,
+        name="placement_report_pdf",
+    ),
     path("job/<int:job_id>/", views.job_detail, name="job_detail"),
     path("application/<int:pk>/", views.application_detail, name="application_detail"),
     path("notifications/", views.notifications, name="notifications"),

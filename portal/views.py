@@ -1,6 +1,8 @@
 # from django.shortcuts import render
 
 import csv
+import base64
+from io import BytesIO
 from urllib.parse import urlencode
 from datetime import date
 from django.shortcuts import render, redirect, get_object_or_404
@@ -16,13 +18,23 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.contrib.auth import login, authenticate
 from django.db.models import Q
+from django.db.models import Count
 from .forms import ForgotCredentialsForm
 
 # from django.urls import reverse
 from django.conf import settings
 from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 
+import matplotlib
+
+matplotlib.use("Agg")  # Prevents GUI errors on servers
+import matplotlib.pyplot as plt
 from .forms import JobPostForm
+from django.template.loader import render_to_string, get_template
+
+# In your views.py
 
 
 def filter_slots(
@@ -669,30 +681,10 @@ def active_slots(request):
 def all_applications(request):
     employer = get_object_or_404(Employer, user=request.user)
 
-    # applications = Application.objects.filter(job__employer=employer).select_related(
-    #   "student", "job", "job__employer"
-    status_filter = request.GET.get("status", "").strip()
-    institution_filter = request.GET.get("institution", "").strip()
-    department_filter = request.GET.get("department", "").strip()
-
-    # applications = (
-    #   Application.objects.filter(job__employer=employer)
-    #  .select_related("student", "job", "job__employer")
-    # .order_by("-applied_on")
-    # )
-    applications = _get_employer_applications_queryset(employer)
-
-    valid_statuses = {"Pending", "Accepted", "Rejected"}
-    if status_filter in valid_statuses:
-        applications = applications.filter(status=status_filter)
-    if institution_filter:
-        applications = applications.filter(
-            student__institution__iexact=institution_filter
-        )
-    if department_filter:
-        applications = applications.filter(
-            student__department__iexact=department_filter
-        )
+    filters = _get_report_filters(request)
+    applications = _apply_report_filters(
+        _get_employer_applications_queryset(employer), filters
+    )
 
     base_applications = _get_employer_applications_queryset(employer)
     institution_options = (
@@ -716,9 +708,10 @@ def all_applications(request):
         {
             "applications": applications,
             "report_rows": report_rows,
-            "status_filter": status_filter,
-            "institution_filter": institution_filter,
-            "department_filter": department_filter,
+            "status_filter": filters["status_filter"],
+            "institution_filter": filters["institution_filter"],
+            "department_filter": filters["department_filter"],
+            "query_string": filters["query_string"],
             "institution_options": institution_options,
             "department_options": department_options,
         },
@@ -731,6 +724,40 @@ def _get_employer_applications_queryset(employer):
         .select_related("student", "job", "job__employer")
         .order_by("-applied_on")
     )
+
+
+def _get_report_filters(request):
+    status_filter = request.GET.get("status", "").strip()
+    institution_filter = request.GET.get("institution", "").strip()
+    department_filter = request.GET.get("department", "").strip()
+    query_string = urlencode(
+        {
+            "status": status_filter,
+            "institution": institution_filter,
+            "department": department_filter,
+        }
+    )
+    return {
+        "status_filter": status_filter,
+        "institution_filter": institution_filter,
+        "department_filter": department_filter,
+        "query_string": query_string,
+    }
+
+
+def _apply_report_filters(applications, filters):
+    valid_statuses = {"Pending", "Accepted", "Rejected"}
+    if filters["status_filter"] in valid_statuses:
+        applications = applications.filter(status=filters["status_filter"])
+    if filters["institution_filter"]:
+        applications = applications.filter(
+            student__institution__iexact=filters["institution_filter"]
+        )
+    if filters["department_filter"]:
+        applications = applications.filter(
+            student__department__iexact=filters["department_filter"]
+        )
+    return applications
 
 
 def _build_placement_report_row(application):
@@ -762,28 +789,129 @@ def _build_placement_report_row(application):
     }
 
 
+def _figure_to_data_uri(fig):
+    buffer = BytesIO()
+    fig.savefig(buffer, format="png", bbox_inches="tight", dpi=170)
+    plt.close(fig)
+    return (
+        f"data:image/png;base64,{base64.b64encode(buffer.getvalue()).decode('utf-8')}"
+    )
+
+
+def _build_report_charts(applications):
+    apps_per_post = list(
+        applications.values("job__title")
+        .annotate(total=Count("id"))
+        .order_by("-total", "job__title")[:8]
+    )
+    institution_mix = list(
+        applications.exclude(student__institution="")
+        .values("student__institution")
+        .annotate(total=Count("id"))
+        .order_by("-total", "student__institution")[:6]
+    )
+
+    charts = {"applications_per_post": None, "institution_mix": None}
+
+    if apps_per_post:
+        labels = [item["job__title"] for item in apps_per_post]
+        values = [item["total"] for item in apps_per_post]
+        fig, ax = plt.subplots(figsize=(10, 4.8))
+        ax.bar(labels, values, color="#1f77b4")
+        ax.set_title("Applications Per Post", fontsize=14, pad=12)
+        ax.set_ylabel("Applications")
+        ax.set_xlabel("Job Posts")
+        ax.tick_params(axis="x", rotation=25, labelsize=9)
+        fig.tight_layout()
+        charts["applications_per_post"] = _figure_to_data_uri(fig)
+
+    if institution_mix:
+        labels = [item["student__institution"] for item in institution_mix]
+        values = [item["total"] for item in institution_mix]
+        fig, ax = plt.subplots(figsize=(6.4, 6))
+        ax.pie(values, labels=labels, autopct="%1.0f%%", startangle=140)
+        ax.set_title("Students by Institution", fontsize=14, pad=12)
+        fig.tight_layout()
+        charts["institution_mix"] = _figure_to_data_uri(fig)
+
+    return charts
+
+
+def _build_report_summary(applications):
+    return {
+        "total": applications.count(),
+        "pending": applications.filter(status="Pending").count(),
+        "accepted": applications.filter(status="Accepted").count(),
+        "rejected": applications.filter(status="Rejected").count(),
+    }
+
+
+def _build_active_filter_labels(filters):
+    active_filters = []
+    if filters["status_filter"]:
+        active_filters.append(f"Status: {filters['status_filter']}")
+    if filters["institution_filter"]:
+        active_filters.append(f"Institution: {filters['institution_filter']}")
+    if filters["department_filter"]:
+        active_filters.append(f"Department: {filters['department_filter']}")
+    return active_filters
+
+
+def _build_pdf_context(request, employer, applications, filters):
+    return {
+        "employer": employer,
+        "report_rows": [_build_placement_report_row(app) for app in applications],
+        "summary": _build_report_summary(applications),
+        "charts": _build_report_charts(applications),
+        "active_filter_labels": _build_active_filter_labels(filters),
+        "generated_on": timezone.localtime(),
+        "query_string": filters["query_string"],
+    }
+
+
+@login_required
+# def export_placement_report_csv(request):
+def placement_report_pdf_preview(request):
+    employer = get_object_or_404(Employer, user=request.user)
+    filters = _get_report_filters(request)
+    applications = _apply_report_filters(
+        _get_employer_applications_queryset(employer), filters
+    )
+    context = _build_pdf_context(request, employer, applications, filters)
+    return render(request, "portal/reports/placement_report_preview.html", context)
+
+
+@login_required
+def placement_report_pdf(request):
+    employer = get_object_or_404(Employer, user=request.user)
+    filters = _get_report_filters(request)
+    applications = _apply_report_filters(
+        _get_employer_applications_queryset(employer), filters
+    )
+    context = _build_pdf_context(request, employer, applications, filters)
+    html_string = render_to_string(
+        "portal/reports/placement_report_pdf.html",
+        context=context,
+        request=request,
+    )
+    pdf_bytes = HTML(
+        string=html_string, base_url=request.build_absolute_uri("/")
+    ).write_pdf()
+
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    filename = "placement_tracking_report.pdf"
+    disposition = "attachment" if request.GET.get("download") == "1" else "inline"
+    response["Content-Disposition"] = f'{disposition}; filename="{filename}"'
+    return response
+
+
 @login_required
 def export_placement_report_csv(request):
     employer = get_object_or_404(Employer, user=request.user)
-    # applications = Application.objects.filter(job__employer=employer).select_related(
-    #    "student", "job", "job__employer"
-    # )
-    status_filter = request.GET.get("status", "").strip()
-    institution_filter = request.GET.get("institution", "").strip()
-    department_filter = request.GET.get("department", "").strip()
-
-    applications = _get_employer_applications_queryset(employer)
-    valid_statuses = {"Pending", "Accepted", "Rejected"}
-    if status_filter in valid_statuses:
-        applications = applications.filter(status=status_filter)
-    if institution_filter:
-        applications = applications.filter(
-            student__institution__iexact=institution_filter
-        )
-    if department_filter:
-        applications = applications.filter(
-            student__department__iexact=department_filter
-        )
+    filters = _get_report_filters(request)
+    applications = _apply_report_filters(
+        _get_employer_applications_queryset(employer), filters
+    )
 
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = (
@@ -925,3 +1053,40 @@ def notification_detail(request, pk):
     notification.save()
 
     return render(request, "notification_detail.html", {"notification": notification})
+
+
+def placement_report_pdf(request):
+    # 1. FETCH AND FILTER DATA FIRST
+    active_slots_filter = request.GET.get("status", "all")
+    # ... include other filters (location, industry, etc.) ...
+
+    # Initialize the queryset
+    jobs = JobSlot.objects.select_related("employer").all().order_by("-created_at")
+    print(f"Total jobs in DB: {JobSlot.objects.count()}")
+    print(f"Total jobs after filtering: {jobs.count()}")
+    # Apply your filter function
+    jobs = filter_slots(jobs, active_slots=active_slots_filter)
+    # ... your existing logic to get context/data ...
+    context = {
+        "jobs": jobs,
+        "is_pdf": True,
+        "employer_name": request.user.employer_profile.company_name,
+        # Add any other variables your HTML template needs here
+    }
+
+    # 1. Render your template to a string
+    html_content = render_to_string(
+        "portal/reports/placement_report_preview.html", context
+    )
+    html_content = render_to_string("portal/reports/pdf_base.html", context)
+
+    # 2. Prepare the PDF response
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="placement_report.pdf"'
+    # 3. Create the PDF using pisa
+    pisa_status = pisa.CreatePDF(html_content, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse("Error generating PDF", status=500)
+
+    return response

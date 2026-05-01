@@ -1,0 +1,48 @@
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Placement Tracking Report</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Job Title</th>
+                <th>Institution</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in jobs %}
+            <tr>
+                <td>{{ job.title }}</td>
+                <td>{{ job.institution }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="2">No jobs found matching your criteria.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+
+</html>
