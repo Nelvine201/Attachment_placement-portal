@@ -777,6 +777,7 @@ def _build_placement_report_row(application):
     return {
         "student_name": application.student.full_name
         or application.student.user.username,
+        "job_slot": application.job.title if application.job else "N/A",
         "course": application.student.course or "N/A",
         "department": application.student.department or "N/A",
         "year_of_study": application.student.year_of_study or "N/A",
@@ -921,6 +922,7 @@ def export_placement_report_csv(request):
     writer.writerow(
         [
             "Name",
+            "Slot",
             "Course",
             "Department",
             "Year of Study",
@@ -938,6 +940,7 @@ def export_placement_report_csv(request):
         writer.writerow(
             [
                 row["student_name"],
+                row["job_slot"],
                 row["course"],
                 row["department"],
                 row["year_of_study"],
@@ -1056,37 +1059,41 @@ def notification_detail(request, pk):
 
 
 def placement_report_pdf(request):
-    # 1. FETCH AND FILTER DATA FIRST
-    active_slots_filter = request.GET.get("status", "all")
-    # ... include other filters (location, industry, etc.) ...
+    apps = Application.objects.select_related("job_slot", "student").all()
+    # 1. Fetch the data (Mirroring your tracking page filters)
+    # This pulls based on the URL parameters sent from your preview page
+    institution = request.GET.get("institution")
+    status = request.GET.get("status")
 
-    # Initialize the queryset
-    jobs = JobSlot.objects.select_related("employer").all().order_by("-created_at")
-    print(f"Total jobs in DB: {JobSlot.objects.count()}")
-    print(f"Total jobs after filtering: {jobs.count()}")
-    # Apply your filter function
-    jobs = filter_slots(jobs, active_slots=active_slots_filter)
-    # ... your existing logic to get context/data ...
+    applications = Application.objects.all()
+
+    if institution:
+        applications = applications.filter(student__institution=institution)
+    if status:
+        applications = applications.filter(status=status)
+
+    # 2. Prepare Context
+    # We fetch the company name from the logged-in employer
+    company_name = "Our Company"
+    if hasattr(request.user, "employer_profile"):
+        company_name = request.user.employer_profile.company_name
+
     context = {
-        "jobs": jobs,
-        "is_pdf": True,
-        "employer_name": request.user.employer_profile.company_name,
-        # Add any other variables your HTML template needs here
+        "applications": applications,
+        "company_name": company_name,
+        "generated_on": "April 28, 2026",  # Or use timezone.now()
     }
 
-    # 1. Render your template to a string
-    html_content = render_to_string(
-        "portal/reports/placement_report_preview.html", context
-    )
+    # 3. Render to the NEW simple template
     html_content = render_to_string("portal/reports/pdf_base.html", context)
 
-    # 2. Prepare the PDF response
+    # 4. Generate PDF
     response = HttpResponse(content_type="application/pdf")
     response["Content-Disposition"] = 'inline; filename="placement_report.pdf"'
-    # 3. Create the PDF using pisa
+
     pisa_status = pisa.CreatePDF(html_content, dest=response)
 
     if pisa_status.err:
-        return HttpResponse("Error generating PDF", status=500)
+        return HttpResponse("Error generating PDF report", status=500)
 
     return response
